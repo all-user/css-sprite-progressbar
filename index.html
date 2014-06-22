@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <link href="css/progressbar-test.css" rel="stylesheet">
+        <script type="text/javascript">"use strict";</script>
+        <script src="js/util/publisher.js"></script>
+        <script src="js/util/stateful.js"></script>
+        <script src="js/flickr/flickr-api-manager.js"></script>
+        <script src="js/photos/preloader.js"></script>
+        <script src="js/photos/photos-model.js"></script>
+        <script src="js/photos/photos-view.js"></script>
+        <script src="js/photos/photos-router.js"></script>
+        <script src="js/input/input-view.js"></script>
+        <script src="js/progressbar/progressbar-model.js"></script>
+        <script src="js/progressbar/progressbar-view.js"></script>
+        <script src="js/progressbar/progressbar-router.js"></script>
+        <script src="js/renderer/renderer.js"></script>
+        <script src="js/renderer/renderer-router.js"></script>
+        <script src="js/main/main-router.js"></script>
+  </head>
+  <body>
+    <div id="input-window">
+      <form>
+        <p>
+          Freeword <input id="search-text" type="text" value="recent">
+          Number of photos(1 - 500)<input id="per-page" type="number" value="200">
+          Maximum of requests(1 - 500)<input id="max-req" type="number" value="5">
+        </p>
+      </form>
+      <button id="search-button">Search Flickr</button>
+    </div>
+    <div id="background-window">
+    </div>
+    <div id='gauge-box'>
+      <div id='progress-bar'></div>
+      <div id='arrow-box'>
+        <div class='arrow-tile' style='left:0px;'></div>
+        <div class='arrow-tile' style='left:100px;'></div>
+        <div class='arrow-tile' style='left:200px;'></div>
+        <div class='arrow-tile' style='left:300px;'></div>
+        <div class='arrow-tile' style='left:400px;'></div>
+        <div class='arrow-tile' style='left:500px;'></div>
+      </div>
+    </div>
+    <div id="photos-view"></div>
+  </body>
+</html>
