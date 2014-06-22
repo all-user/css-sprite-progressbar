@@ -31,7 +31,7 @@ exports.publisher =
     return
 
 exports.makePublisher = (o) ->
-  for own k of publisher
-    o[k] = publisher[k] if typeof publisher[k] is 'function'
+  for own k, v of publisher
+    o[k] = v if typeof v is 'function'
 
   o._subscribers = any : []

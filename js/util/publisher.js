@@ -49,11 +49,12 @@
   };
 
   exports.makePublisher = function(o) {
-    var k;
+    var k, v;
     for (k in publisher) {
       if (!__hasProp.call(publisher, k)) continue;
-      if (typeof publisher[k] === 'function') {
-        o[k] = publisher[k];
+      v = publisher[k];
+      if (typeof v === 'function') {
+        o[k] = v;
       }
     }
     return o._subscribers = {
