@@ -16,10 +16,10 @@ exports.stateful =
     changed = no
 
     for type, status of statusObj
-      ownPropChanged = state.hasOwnProperty(type) and state[type] isnt status
+      changeOwnProp = state.hasOwnProperty(type) and state[type] isnt status
       margeProp = not state.hasOwnProperty(type) and marge
 
-      if ownPropChanged or margeProp
+      if changeOwnProp or margeProp
         changed = yes
         state[type] = status
         newStatus = {}
