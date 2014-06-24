@@ -12,7 +12,6 @@ document.addEventListener('DOMContentLoaded', ->
     preload : (urlArr) ->
       fragment = document.createDocumentFragment()
       body = document.body
-
       for v, i in urlArr
         obj = document.createElement('object')
         obj.width = 0
@@ -20,9 +19,7 @@ document.addEventListener('DOMContentLoaded', ->
         obj.data = v
         obj.onload = this.makeCreatePhoto(v)
         fragment.appendChild(obj)
-
       objfield.appendChild(fragment)
-
 
     createPhoto : ->
 
