@@ -30,12 +30,14 @@
       },
       createPhoto: function() {},
       makeCreatePhoto: function(url) {
-        return (function() {
-          var img;
-          img = document.createElement('img');
-          img.src = url;
-          return this.fire('loaded', img);
-        }).bind(this);
+        return (function(_this) {
+          return function() {
+            var img;
+            img = document.createElement('img');
+            img.src = url;
+            return _this.fire('loaded', img);
+          };
+        })(this);
       }
     };
     return makePublisher(preloader);

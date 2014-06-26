@@ -24,11 +24,10 @@ document.addEventListener('DOMContentLoaded', ->
     createPhoto : ->
 
     makeCreatePhoto : (url) ->
-      ( ->
+      =>
         img = document.createElement('img')
         img.src = url
         this.fire('loaded', img)
-      ).bind(this)
 
   makePublisher(preloader)
 
