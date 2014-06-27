@@ -78,13 +78,29 @@
       });
     },
     validateProperties: function() {
-      this.maxConcurrentRequest |= 0;
-      this.allRequestSize |= 0;
-      this.maxConcurrentRequest = this.maxConcurrentRequest > this.allRequestSize ? this.allRequestSize : this.maxConcurrentRequest > 0 ? this.maxConcurrentRequest : 0;
-      this.unloadedURLArr = this.photosURLArr.slice();
-      return this.changeState({
-        validated: true
-      });
+      var e;
+      try {
+        this.maxConcurrentRequest |= 0;
+        this.allRequestSize |= 0;
+        if (isNaN(this.maxConcurrentRequest)) {
+          throw new Error('maxConcurrentRequest is Nan');
+        }
+        if (isNaN(this.allRequestSize)) {
+          throw new Error('allRequestSize is Nan');
+        }
+        this.maxConcurrentRequest = this.maxConcurrentRequest > this.allRequestSize ? this.allRequestSize : this.maxConcurrentRequest > 0 ? this.maxConcurrentRequest : 0;
+        this.unloadedURLArr = this.photosURLArr.slice();
+        return this.changeState({
+          validated: true
+        });
+      } catch (_error) {
+        e = _error;
+        console.log('Error in photosModel.validateProperties');
+        console.log("message -> " + e.message);
+        console.log("stack -> " + e.stack);
+        console.log("fileName -> " + (e.fileName || e.sourceURL));
+        return console.log("line -> " + (e.line || e.lineNumber));
+      }
     },
     getNextPhoto: function(received) {
       return this._getPhotosArr(received, 1);

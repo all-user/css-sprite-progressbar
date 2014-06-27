@@ -29,7 +29,7 @@
       return this.visitSubscribers('publish', type, publication);
     },
     visitSubscribers: function(action, type, arg) {
-      var i, max, pubtype, subscribers, _i;
+      var e, i, max, pubtype, subscribers, _i;
       if (type == null) {
         type = 'any';
       }
@@ -38,7 +38,19 @@
       max = subscribers != null ? subscribers.length : 0;
       for (i = _i = 0; 0 <= max ? _i < max : _i > max; i = 0 <= max ? ++_i : --_i) {
         if (action === 'publish') {
-          subscribers[i].fn.call(subscribers[i].context, arg);
+          try {
+            subscribers[i].fn.call(subscribers[i].context, arg);
+          } catch (_error) {
+            e = _error;
+            try {
+              new Error("Error in " + pubtype + " : e -> " + e);
+            } catch (_error) {
+              console.log("message -> " + e.message);
+              console.log("stack -> " + e.stack);
+              console.log("fileName -> " + (e.fileName || e.sourceURL));
+              console.log("line -> " + (e.line || e.lineNumber));
+            }
+          }
         } else {
           if (subscribers[i].fn === arg && subscribers[i].context === context) {
             subscribers.splice(i, 1);

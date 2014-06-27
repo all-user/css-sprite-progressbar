@@ -38,10 +38,23 @@
       return _results;
     },
     validateOptions: function() {
-      var negative;
-      negative = +this.apiOptions.others.per_page < 0;
-      if (negative) {
-        return this.apiOptions.others.per_page = 0;
+      var e, negative, perPage;
+      try {
+        perPage = +this.apiOptions.others.per_page;
+        if (isNaN(perPage)) {
+          throw new Error("per_page is NaN");
+        }
+        negative = perPage < 0;
+        if (negative) {
+          return this.apiOptions.others.per_page = 0;
+        }
+      } catch (_error) {
+        e = _error;
+        console.log('Error in flickrApiManager.validateOptions');
+        console.log("message -> " + e.message);
+        console.log("stack -> " + e.stack);
+        console.log("fileName -> " + (e.fileName || e.sourceURL));
+        return console.log("line -> " + (e.line || e.lineNumber));
       }
     },
     sendRequestJSONP: function(options) {

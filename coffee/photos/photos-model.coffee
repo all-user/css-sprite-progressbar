@@ -61,20 +61,29 @@ exports.photosModel =
     this.changeState(validated : no)
 
   validateProperties : ->
-    this.maxConcurrentRequest |= 0
-    this.allRequestSize |= 0
+    try
+      this.maxConcurrentRequest |= 0
+      this.allRequestSize |= 0
+      throw new Error('maxConcurrentRequest is Nan') if isNaN(this.maxConcurrentRequest)
+      throw new Error('allRequestSize is Nan') if isNaN(this.allRequestSize)
 
-    this.maxConcurrentRequest =
-      if this.maxConcurrentRequest > this.allRequestSize
-        this.allRequestSize
-      else
-        if this.maxConcurrentRequest > 0
-          this.maxConcurrentRequest
+      this.maxConcurrentRequest =
+        if this.maxConcurrentRequest > this.allRequestSize
+          this.allRequestSize
         else
-          0
+          if this.maxConcurrentRequest > 0
+            this.maxConcurrentRequest
+          else
+            0
 
-    this.unloadedURLArr = this.photosURLArr.slice()
-    this.changeState(validated : yes)
+      this.unloadedURLArr = this.photosURLArr.slice()
+      this.changeState(validated : yes)
+    catch e
+      console.log('Error in photosModel.validateProperties')
+      console.log("message -> #{ e.message }")
+      console.log("stack -> #{ e.stack }")
+      console.log("fileName -> #{ e.fileName || e.sourceURL }")
+      console.log("line -> #{ e.line || e.lineNumber }")
 
   getNextPhoto : (received) ->
     return this._getPhotosArr(received, 1)

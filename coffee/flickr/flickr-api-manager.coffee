@@ -24,8 +24,18 @@ exports.flickrApiManager =
         this.apiOptions.others[k] = v
 
   validateOptions : ->
-    negative = +this.apiOptions.others.per_page < 0
-    this.apiOptions.others.per_page = 0 if negative
+    try
+      perPage = +this.apiOptions.others.per_page
+      throw new Error("per_page is NaN") if isNaN(perPage)
+      negative = perPage < 0
+      this.apiOptions.others.per_page = 0 if negative
+    catch e
+      console.log('Error in flickrApiManager.validateOptions')
+      console.log("message -> #{ e.message }")
+      console.log("stack -> #{ e.stack }")
+      console.log("fileName -> #{ e.fileName || e.sourceURL }")
+      console.log("line -> #{ e.line || e.lineNumber }")
+
 
   sendRequestJSONP : (options) ->
     return false if this._state.waiting

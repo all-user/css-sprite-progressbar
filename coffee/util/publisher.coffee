@@ -23,7 +23,16 @@ exports.publisher =
 
     for i in [0...max]
       if action is 'publish'
-        subscribers[i].fn.call(subscribers[i].context, arg)
+        try
+          subscribers[i].fn.call(subscribers[i].context, arg)
+        catch e
+          try
+            new Error("Error in #{ pubtype } : e -> #{ e }")
+          catch
+            console.log("message -> #{ e.message }")
+            console.log("stack -> #{ e.stack }")
+            console.log("fileName -> #{ e.fileName || e.sourceURL }")
+            console.log("line -> #{ e.line || e.lineNumber }")
       else
         if subscribers[i].fn is arg and subscribers[i].context is context
           subscribers.splice(i, 1)
