@@ -17,14 +17,14 @@
       return this._state[prop];
     },
     _changeState: function(statusObj, marge) {
-      var changed, margeProp, newStatus, ownPropChanged, state, status, type;
+      var changeOwnProp, changed, margeProp, newStatus, state, status, type;
       state = this._state;
       changed = false;
       for (type in statusObj) {
         status = statusObj[type];
-        ownPropChanged = state.hasOwnProperty(type) && state[type] !== status;
+        changeOwnProp = state.hasOwnProperty(type) && state[type] !== status;
         margeProp = !state.hasOwnProperty(type) && marge;
-        if (ownPropChanged || margeProp) {
+        if (changeOwnProp || margeProp) {
           changed = true;
           state[type] = status;
           newStatus = {};
