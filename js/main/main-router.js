@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (action === "stop") {
         renderer.deleteUpdater(this.store.fadingUpdater);
       } else {
-        this.store.fadingUpdater = progressbarView.fadingUpdate.bind(progressbarView);
+        this.store.fadingUpdater = progressbarView.fadingUpdate;
         renderer.addUpdater(this.store.fadingUpdater);
       }
 
