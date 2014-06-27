@@ -59,7 +59,7 @@ exports.flickrApiManager =
     noJsonp = options.format is 'json' and options.noJsonCallback
     uri += 'noJsonCallback' if noJsonp
 
-    return "http://api.flickr.com/services/rest/?method=flickr.photos.search&#{uri}"
+    return "https://api.flickr.com/services/rest/?method=flickr.photos.search&#{uri}"
 
   genPhotosURLArr : (json) ->
     for v, i in json.photos.photo

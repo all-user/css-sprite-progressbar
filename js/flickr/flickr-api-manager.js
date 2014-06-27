@@ -81,7 +81,7 @@
       if (noJsonp) {
         uri += 'noJsonCallback';
       }
-      return "http://api.flickr.com/services/rest/?method=flickr.photos.search&" + uri;
+      return "https://api.flickr.com/services/rest/?method=flickr.photos.search&" + uri;
     },
     genPhotosURLArr: function(json) {
       var i, v, _i, _len, _ref, _results;
