@@ -89,7 +89,7 @@
           return function() {
             progressbar.countTime = 0;
             progressbar.recentWidth = model.progress * 100;
-            progressbar.passingWidth = progressbarStyle.width.replace('%', '') | 0;
+            progressbar.passingWidth = +progressbarStyle.width.replace('%', '');
             return _this.fire('ratiorendered', null);
           };
         })(this);

@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', ->
       _renderRatio = =>
         progressbar.countTime = 0
         progressbar.recentWidth = model.progress * 100
-        progressbar.passingWidth = progressbarStyle.width.replace('%', '') | 0
+        progressbar.passingWidth = +progressbarStyle.width.replace('%', '')
         this.fire('ratiorendered', null)
 
       _genPosition = (current) ->
