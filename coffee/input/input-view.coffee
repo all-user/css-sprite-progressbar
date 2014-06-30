@@ -27,4 +27,6 @@ document.addEventListener('DOMContentLoaded', ->
       this.fire('searchclick', e)
 
   makePublisher(inputView)
+
+  inputView.el.searchButton.addEventListener('click', inputView.handleClick.bind(inputView))
 )

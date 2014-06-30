@@ -37,7 +37,8 @@
         return this.fire('searchclick', e);
       }
     };
-    return makePublisher(inputView);
+    makePublisher(inputView);
+    return inputView.el.searchButton.addEventListener('click', inputView.handleClick.bind(inputView));
   });
 
 }).call(this);
