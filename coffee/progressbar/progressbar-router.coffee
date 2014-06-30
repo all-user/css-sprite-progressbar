@@ -10,14 +10,14 @@ document.addEventListener('DOMContentLoaded', ->
       progressbarModel.changeState(hidden : yes)
       progressbarModel.stop()
 
-  # these are observed progressbarModel
+  # these are observed by progressbarModel
   progressbarModel.on('run', 'fadeIn', progressbarModel)
   progressbarView.on('ratiorendered', 'handleRendered', mediator)
   progressbarView.on('fullchange', 'handleFull', mediator)
   progressbarView.on('fadeend', 'fadeStop', progressbarModel)
   progressbarView.on('hide', 'handleHide', mediator)
 
-  # these are observed progressbarView
+  # these are observed by progressbarView
   progressbarView.changeState(model : progressbarModel._state)
   progressbarModel.on('fadingchange', 'fadeInOut', progressbarView)
   progressbarView.on('hide', 'initProgressbar', progressbarView)
