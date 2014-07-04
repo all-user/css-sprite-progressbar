@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', ->
           'middle'
       progressbarModel.setFlowSpeed(speed)
 
-    # these methods access to renerer's methods
+    # these methods access to renderer's methods
     handleFading : (statusObj) ->
       action = statusObj.fading
 
@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', ->
 
   # these are observed by photosModel
   flickrApiManager.on('urlready', 'initPhotos', photosModel)
-  inputView.on('cancelclick', 'clearUnloaded', photosModel)
+  inputView.on('canselclick', 'clearUnloaded', photosModel)
 
   # these are observed by progressbarModel
   flickrApiManager.on('urlready', 'setDenomiPhotosLength', mediator)
