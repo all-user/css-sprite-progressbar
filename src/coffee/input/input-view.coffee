@@ -1,38 +1,38 @@
-exports = this
+makePublisher = require '../util/publisher'
 
-document.addEventListener('DOMContentLoaded', ->
-  exports.inputView =
-    el :
-      searchText   : document.getElementById('search-text')
-      perPage      : document.getElementById('per-page')
-      maxReq       : document.getElementById('max-req')
-      searchButton : document.getElementById('search-button')
-      canselButton : document.getElementById('cansel-button')
-      photosView   : document.getElementById('photos-view')
+inputView =
+  el :
+    searchText   : document.getElementById('search-text')
+    perPage      : document.getElementById('per-page')
+    maxReq       : document.getElementById('max-req')
+    searchButton : document.getElementById('search-button')
+    canselButton : document.getElementById('cansel-button')
+    photosView   : document.getElementById('photos-view')
 
-    getOptions : ->
-      options =
-        text     : this.el.searchText.value
-        per_page : this.el.perPage.value
+  getOptions : ->
+    options =
+      text     : this.el.searchText.value
+      per_page : this.el.perPage.value
 
-      for own k of options
-        delete options[k] if options[k] is ''
+    for own k of options
+      delete options[k] if options[k] is ''
 
-      options
+    options
 
-    getMaxConcurrentRequest : ->
-      maxReq = this.el.maxReq.value
-      maxReq ? false
+  getMaxConcurrentRequest : ->
+    maxReq = this.el.maxReq.value
+    maxReq ? false
 
-    handleClick : (e) ->
-      this.fire('searchclick', e)
+  handleClick : (e) ->
+    this.fire('searchclick', e)
 
-    handleCansel : (e) ->
-      console.log('canselclick')
-      this.fire('canselclick', e)
+  handleCansel : (e) ->
+    console.log('canselclick')
+    this.fire('canselclick', e)
 
-  makePublisher(inputView)
+makePublisher(inputView)
 
-  inputView.el.searchButton.addEventListener('click', inputView.handleClick.bind(inputView))
-  inputView.el.canselButton.addEventListener('click', inputView.handleCansel.bind(inputView))
-)
+inputView.el.searchButton.addEventListener('click', inputView.handleClick.bind(inputView))
+inputView.el.canselButton.addEventListener('click', inputView.handleCansel.bind(inputView))
+
+module.exports = inputView

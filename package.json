@@ -15,7 +15,8 @@
     "coffee-script": "^1.7.1",
     "vinyl-source-stream": "*",
     "browserify": "*",
-    "coffeeify": "*"
+    "coffeeify": "*",
+    "gulp-coffeelint": "*"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

@@ -1,3 +1,4 @@
-document.addEventListener('DOMContentLoaded', ->
-  renderer.addUpdater(progressbarView.makeProgressbarUpdate())
-)
+renderer = require './renderer'
+progressbarView = require '../progressbar/progressbar-view'
+
+renderer.addUpdater(progressbarView.makeProgressbarUpdate())

@@ -88,3 +88,5 @@ progressbarModel =
 
 makePublisher(progressbarModel)
 makeStateful(progressbarModel)
+
+module.exports = progressbarModel

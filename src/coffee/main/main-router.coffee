@@ -1,10 +1,15 @@
 flickrApiManager = require '../flickr/flickr-api-manager'
 photosModel = require '../photos/photos-model'
-progressbarModel = require '../progressbar/progressbar-model'
-progressbarView = require '../progressbar/progressbar-view'
-inputView = require '../input/input-view'
 
 document.addEventListener('DOMContentLoaded', ->
+  inputView = require '../input/input-view'
+  require '../photos/photos-router'
+  progressbarModel = require '../progressbar/progressbar-model'
+  progressbarView = require '../progressbar/progressbar-view'
+  require '../progressbar/progressbar-router'
+  renderer = require '../renderer/renderer'
+  require '../renderer/renderer-router'
+
   mediator =
     store : {}
 

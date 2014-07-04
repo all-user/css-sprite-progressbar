@@ -1,6 +1,7 @@
-exports = this
+makePublisher = require '../util/publisher'
+makeStateful = require '../util/stateful'
 
-exports.renderer =
+renderer =
   updaters : []
   framerate : 16
   timerID : null
@@ -68,3 +69,4 @@ renderer.makeDraw()
 makePublisher(renderer)
 makeStateful(renderer)
 
+module.exports = renderer
