@@ -1,0 +1,25 @@
+{
+  "name": "progress_bar_coffee",
+  "version": "0.0.1",
+  "description": "",
+  "main": "js/index.js",
+  "dependencies": {
+  },
+  "browserify": {
+    "transform": [
+      "coffeeify"
+    ]
+  },
+  "devDependencies": {
+    "gulp": "^3.8.5",
+    "coffee-script": "^1.7.1",
+    "vinyl-source-stream": "*",
+    "browserify": "*",
+    "coffeeify": "*"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}

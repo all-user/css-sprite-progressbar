@@ -1,9 +1,10 @@
-exports = this
-exports.jsonFlickrApi = (json) ->
+makePublisher = require '../util/publisher'
+makeStateful = require '../util/stateful'
+
+window.jsonFlickrApi = (json) ->
   jsonFlickrApi.fire('apiresponse', json)
 
-
-exports.flickrApiManager =
+flickrApiManager =
   apiOptions :
     apiKey : 'a3d606b00e317c733132293e31e95b2e'
     format : 'json'
@@ -85,3 +86,5 @@ makePublisher(jsonFlickrApi)
 makePublisher(flickrApiManager)
 makeStateful(flickrApiManager)
 jsonFlickrApi.on('apiresponse', 'handleAPIResponse', flickrApiManager)
+
+module.exports = flickrApiManager

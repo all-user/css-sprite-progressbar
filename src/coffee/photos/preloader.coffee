@@ -1,4 +1,4 @@
-exports = this
+makePublisher = require '../util/publisher'
 
 document.addEventListener('DOMContentLoaded', ->
   objfield = document.createElement('div')
@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', ->
   objfield.id = 'objfield'
   document.body.appendChild(objfield)
 
-  exports.preloader =
+  preloader =
     preload : (urlArr) ->
       fragment = document.createDocumentFragment()
       body = document.body
@@ -31,4 +31,5 @@ document.addEventListener('DOMContentLoaded', ->
 
   makePublisher(preloader)
 
+  module.exports = preloader
 )

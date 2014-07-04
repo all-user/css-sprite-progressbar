@@ -31,6 +31,13 @@
       });
       return this.fire('clear', null);
     },
+    clearUnloaded: function() {
+      this.setProperties({
+        unloadedURLArr: []
+      });
+      console.log('clearunloaded');
+      return this.fire('clearunloaded', this.loadedSize);
+    },
     incrementLoadedSize: function() {
       this.loadedSize++;
       this.fire('loadedincreased', photosModel.loadedSize);

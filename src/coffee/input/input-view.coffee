@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', ->
       perPage      : document.getElementById('per-page')
       maxReq       : document.getElementById('max-req')
       searchButton : document.getElementById('search-button')
+      canselButton : document.getElementById('cansel-button')
       photosView   : document.getElementById('photos-view')
 
     getOptions : ->
@@ -26,7 +27,12 @@ document.addEventListener('DOMContentLoaded', ->
     handleClick : (e) ->
       this.fire('searchclick', e)
 
+    handleCansel : (e) ->
+      console.log('canselclick')
+      this.fire('canselclick', e)
+
   makePublisher(inputView)
 
   inputView.el.searchButton.addEventListener('click', inputView.handleClick.bind(inputView))
+  inputView.el.canselButton.addEventListener('click', inputView.handleCansel.bind(inputView))
 )

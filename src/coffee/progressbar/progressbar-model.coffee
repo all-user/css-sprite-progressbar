@@ -1,6 +1,7 @@
-exports = this
+makePublisher = require '../util/publisher'
+makeStateful = require '../util/stateful'
 
-exports.progressbarModel =
+progressbarModel =
   _state :
     hidden : yes
     fading : 'stop'
@@ -84,7 +85,6 @@ exports.progressbarModel =
     res = this._state.numerator / this._state.denominator
     Math[this.processType[process]](res) if this.processType.hasOwnProperty(process)
     res
-
 
 makePublisher(progressbarModel)
 makeStateful(progressbarModel)

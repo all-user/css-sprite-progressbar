@@ -1,3 +1,9 @@
+flickrApiManager = require '../flickr/flickr-api-manager'
+photosModel = require '../photos/photos-model'
+progressbarModel = require '../progressbar/progressbar-model'
+progressbarView = require '../progressbar/progressbar-view'
+inputView = require '../input/input-view'
+
 document.addEventListener('DOMContentLoaded', ->
   mediator =
     store : {}
@@ -39,11 +45,14 @@ document.addEventListener('DOMContentLoaded', ->
       photosModel.setProperties(maxConcurrentRequest : inputView.getMaxConcurrentRequest())
       flickrApiManager.sendRequestJSONP()
 
+
   # these are observed by photosModel
   flickrApiManager.on('urlready', 'initPhotos', photosModel)
+  inputView.on('cancelclick', 'clearUnloaded', photosModel)
 
   # these are observed by progressbarModel
   flickrApiManager.on('urlready', 'setDenomiPhotosLength', mediator)
+  photosModel.on('clearunloaded', 'setDenominator', progressbarModel)
   photosModel.on('loadedincreased', 'setNumerator', progressbarModel)
   flickrApiManager.on('waitingchange', 'checkCanQuit', mediator)
   photosModel.on('completedchange', 'checkCanQuit', mediator)

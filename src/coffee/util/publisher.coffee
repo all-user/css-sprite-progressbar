@@ -1,5 +1,4 @@
-exports = this
-exports.publisher =
+publisher =
 
   _subscribers :
     any : []
@@ -39,7 +38,7 @@ exports.publisher =
 
     return
 
-exports.makePublisher = (o) ->
+module.exports = (o) ->
   for own k, v of publisher
     o[k] = v if typeof v is 'function'
 

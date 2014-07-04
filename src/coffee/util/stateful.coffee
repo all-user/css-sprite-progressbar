@@ -1,5 +1,4 @@
-exports = this
-exports.stateful =
+stateful =
   _state : {}
 
   changeState : (statusObj) ->
@@ -28,7 +27,7 @@ exports.stateful =
 
     this.fire("statechange", state) if changed
 
-exports.makeStateful = (o) ->
+module.exports = (o) ->
   for own i, v of stateful
     o[i] = v if typeof v is 'function'
 

@@ -12,6 +12,7 @@
         perPage: document.getElementById('per-page'),
         maxReq: document.getElementById('max-req'),
         searchButton: document.getElementById('search-button'),
+        canselButton: document.getElementById('cansel-button'),
         photosView: document.getElementById('photos-view')
       },
       getOptions: function() {
@@ -35,10 +36,15 @@
       },
       handleClick: function(e) {
         return this.fire('searchclick', e);
+      },
+      handleCansel: function(e) {
+        console.log('canselclick');
+        return this.fire('canselclick', e);
       }
     };
     makePublisher(inputView);
-    return inputView.el.searchButton.addEventListener('click', inputView.handleClick.bind(inputView));
+    inputView.el.searchButton.addEventListener('click', inputView.handleClick.bind(inputView));
+    return inputView.el.canselButton.addEventListener('click', inputView.handleCansel.bind(inputView));
   });
 
 }).call(this);

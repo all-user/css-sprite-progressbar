@@ -1,6 +1,7 @@
-exports = this
+makePublisher = require '../util/publisher'
+makeStateful = require '../util/stateful'
 
-exports.photosModel =
+photosModel =
   maxConcurrentRequest : 0
   allRequestSize       : 0
   loadedSize           : 0
@@ -26,6 +27,13 @@ exports.photosModel =
       photosArr            : []
     )
     this.fire('clear', null)
+
+  clearUnloaded : ->
+    this.setProperties(
+      unloadedURLArr       : []
+    )
+    console.log('clearunloaded')
+    this.fire('clearunloaded', this.loadedSize)
 
   incrementLoadedSize : ->
     this.loadedSize++
@@ -115,3 +123,5 @@ exports.photosModel =
 
 makePublisher(photosModel)
 makeStateful(photosModel)
+
+module.exports = photosModel

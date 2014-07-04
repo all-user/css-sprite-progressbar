@@ -41,7 +41,9 @@
       }
     };
     flickrApiManager.on('urlready', 'initPhotos', photosModel);
+    inputView.on('cancelclick', 'clearUnloaded', photosModel);
     flickrApiManager.on('urlready', 'setDenomiPhotosLength', mediator);
+    photosModel.on('clearunloaded', 'setDenominator', progressbarModel);
     photosModel.on('loadedincreased', 'setNumerator', progressbarModel);
     flickrApiManager.on('waitingchange', 'checkCanQuit', mediator);
     photosModel.on('completedchange', 'checkCanQuit', mediator);
