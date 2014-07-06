@@ -23,6 +23,7 @@ publisher =
     for i in [0...max]
       if action is 'publish'
         try
+          console.log "#{ type } is fire"
           subscribers[i].fn.call(subscribers[i].context, arg)
         catch e
           try
