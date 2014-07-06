@@ -3,20 +3,24 @@
   "version": "0.0.1",
   "description": "",
   "main": "js/index.js",
-  "dependencies": {
-  },
+  "dependencies": {},
   "browserify": {
     "transform": [
       "coffeeify"
     ]
   },
   "devDependencies": {
-    "gulp": "^3.8.5",
-    "coffee-script": "^1.7.1",
-    "vinyl-source-stream": "*",
     "browserify": "*",
+    "coffee-script": "^1.7.1",
     "coffeeify": "*",
-    "gulp-coffeelint": "*"
+    "event-stream": "^3.1.5",
+    "gulp": "^3.8.5",
+    "gulp-coffee": "^2.0.1",
+    "gulp-coffeelint": "*",
+    "gulp-shell": "^0.2.7",
+    "gulp-util": "^2.2.19",
+    "vinyl-source-stream": "*",
+    "watchify": "^0.10.2"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
