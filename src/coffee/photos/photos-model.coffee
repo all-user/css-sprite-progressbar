@@ -29,16 +29,16 @@ photosModel =
     this.fire('clear', null)
 
   clearUnloaded : ->
-    this.setProperties(
-      unloadedURLArr       : []
-    )
-    console.log('clearunloaded')
+    this.setProperties
+      unloadedURLArr : []
+      allRequestSize : this.loadedSize
+
     this.fire('clearunloaded', this.loadedSize)
 
   incrementLoadedSize : ->
     this.loadedSize++
     this.fire('loadedincreased', photosModel.loadedSize)
-    this.changeState(completed : yes) if this.loadedSize is this.allRequestSize
+    this.changeState(completed : yes) if this.loadedSize >= this.allRequestSize
 
   initPhotos : (urlArr) ->
     this.setProperties(

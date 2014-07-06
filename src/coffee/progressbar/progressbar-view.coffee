@@ -90,7 +90,7 @@ progressbarView =
 
       if frame % 50 is 0
         _renderRatio() if model.canRenderRatio
-        this.changeState(full : yes) if model.canQuit and progressbarStyle.width is '100%'
+        this.changeState(full : yes) if model.canQuit and (+progressbarStyle.width.replace '%', '') >= 100
 
       if progressbar.countTime <= duration
         progressbarStyle.width = easing(
