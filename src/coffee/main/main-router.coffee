@@ -2,7 +2,6 @@ flickrApiManager = require '../flickr/flickr-api-manager'
 photosModel = require '../photos/photos-model'
 
 document.addEventListener 'DOMContentLoaded', ->
-  console.log 'test'
   inputView = require '../input/input-view'
   require '../photos/photos-router'
   progressbarModel = require '../progressbar/progressbar-model'
