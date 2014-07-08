@@ -1,8 +1,15 @@
 stateful =
   _state : {}
 
-  changeState : (statusObj) ->
-    this._changeState(statusObj, no)
+  changeState : (prop, value) ->
+    if typeof prop is 'object'
+      this._changeState(prop, no)
+    else if typeof prop is 'string'
+      obj = {}
+      obj[prop] = value
+      this._changeState(obj, no)
+    else
+      throw new Error 'type error at arguments'
 
   margeState : (statusObj) ->
     this._changeState(statusObj, yes)
