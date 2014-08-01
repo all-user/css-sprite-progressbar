@@ -53,6 +53,6 @@ gulp.task 'paraout', ->
       .pipe gulp.dest "./src/js/#{ d }/"
     )
 
-  merge.apply this, tasks
+  merge tasks...
 
 gulp.task 'default', ['lint', 'browserify', 'paraout']
