@@ -85,6 +85,9 @@ progressbarView =
       "#{ current % 4 * -tileWidth }px #{ (current / 4 | 0) * -tileHeight }px"
 
     this.progressbarUpdate = =>
+      # debug code start ->
+      watch progressbar
+      # <- debug code end
       if ++frame % 2 is 0
         for v in tiles
           v.style.backgroundPosition = _genPosition(progressbar.currentSprite)

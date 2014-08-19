@@ -1,3 +1,7 @@
+# debug code start ->
+window.watch = ->
+# <- debug code end
+
 flickrApiManager = require '../flickr/flickr-api-manager'
 photosModel = require '../photos/photos-model'
 
@@ -86,3 +90,7 @@ document.addEventListener 'DOMContentLoaded', ->
 
   # inputView is observed by mediator
   inputView.on('searchclick', 'handleButtonClick', mediator)
+
+
+  # debug code start ->
+  # <- debug code end
