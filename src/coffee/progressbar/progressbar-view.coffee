@@ -8,6 +8,8 @@ progressbarView =
     arrowBox : document.getElementById('arrow-box')
     tiles : document.getElementsByClassName('arrow-tile')
     progress : document.getElementById('progress-bar')
+    failedMsg : document.getElementById('failed-msg')
+
 
   _state :
     full : no
@@ -150,10 +152,16 @@ progressbarView =
     this._displayChange('block') if statusObj.fading is 'in'
     this.makeFadingUpdate()
 
+  showFailedMsg : ->
+    this.el.failedMsg.style.display = "block"
+
+  hideFailedMsg : ->
+    this.el.failedMsg.style.display = "none"
+
   _displayChange : (prop) ->
     this.el.gaugeBox.style.display =
     this.el.background.style.display = prop
-    this.fire('hide', null)
+    this.fire('hide', null) if prop is "none"
 
 
 makePublisher(progressbarView)

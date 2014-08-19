@@ -115,6 +115,21 @@ body {
   left: 0;
 }
 
+#failed-msg {
+  display: none;
+  font: 24px/1 "Futura", "Helvetica Neue", sans-serif;
+  color: white;
+  height: 24px;
+  width: 100%;
+  text-align: center;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+  position: absolute;
+}
+
 .flickr-img {
   height: 80px;
   width: auto;

@@ -51,6 +51,9 @@ flickrApiManager =
 
     newScript.id = 'kick-api'
     newScript.src = this.genURI(this.apiOptions)
+    newScript.onerror = (e) =>
+      this._state.waiting = no
+      this.fire "apirequestfailed", e
 
     if oldScript?
       document.body.replaceChild(newScript, oldScript)
@@ -77,9 +80,10 @@ flickrApiManager =
       "http://farm#{v.farm}.staticflickr.com/#{v.server}/#{v.id}_#{v.secret}.jpg"
 
   handleAPIResponse : (json) ->
-    this.changeState('waiting' : no)
-    this.fire('apiresponse', json)
-    this.fire('urlready', this.genPhotosURLArr(json))
+    if this.getState('waiting')
+      this.changeState('waiting' : no)
+      this.fire('apiresponse', json)
+      this.fire('urlready', this.genPhotosURLArr(json))
 
 
 makePublisher(jsonFlickrApi)

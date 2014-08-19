@@ -5,6 +5,7 @@ progressbarModel =
   _state :
     hidden : yes
     fading : 'stop'
+    failed : no
     flowSpeed : 'slow'
     denominator : 0
     numerator : 0
@@ -54,6 +55,12 @@ progressbarModel =
 
   fadeStop : ->
     this.changeState(fading: 'stop')
+
+  failed : ->
+    this.changeState(failed: yes)
+
+  resque : ->
+    this.changeState(failed: no)
 
   setFlowSpeed : (speed) ->
     this.changeState(flowSpeed : speed) if this.speed.type.hasOwnProperty(speed)

@@ -46,14 +46,28 @@ document.addEventListener 'DOMContentLoaded', ->
     handleButtonClick : ->
       progressbarModel.run()
       photosModel.clear()
+      progressbarModel.resque()
       flickrApiManager.setAPIOptions(inputView.getOptions())
       photosModel.setProperties(maxConcurrentRequest : inputView.getMaxConcurrentRequest())
       flickrApiManager.sendRequestJSONP()
 
+    handleCanselClick : ->
+      photosModel.clearUnloaded()
+      if flickrApiManager.getState 'waiting'
+        flickrApiManager.changeState 'waiting': no
+        progressbarModel.fadeOut()
+      if progressbarModel.getState "failed"
+        progressbarModel.fadeOut()
+
+
+    handelRequestFailed : (e) ->
+      progressbarModel.failed()
+
 
   # these are observed by photosModel
   flickrApiManager.on('urlready', 'initPhotos', photosModel)
-  inputView.on('canselclick', 'clearUnloaded', photosModel)
+  flickrApiManager.on "apirequestfailed", "failed", progressbarModel
+  inputView.on('canselclick', 'handleCanselClick', mediator)
 
   # these are observed by progressbarModel
   flickrApiManager.on('urlready', 'setDenomiPhotosLength', mediator)
