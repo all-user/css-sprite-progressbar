@@ -86,7 +86,7 @@ progressbarView =
 
     this.progressbarUpdate = =>
       # debug code start ->
-      watch progressbar
+#       watch progressbar
       # <- debug code end
       if ++frame % 2 is 0
         for v in tiles
@@ -136,6 +136,8 @@ progressbarView =
           targetOpacity - currentOpacity
           duration
         )
+
+        watch display
 
         gaugeboxStyle.opacity = display.opacity * 0.5
         backgroundStyle.opacity = display.opacity * 0.8
