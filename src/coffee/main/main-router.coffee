@@ -64,10 +64,6 @@ document.addEventListener 'DOMContentLoaded', ->
         progressbarModel.fadeOut()
 
 
-    handelRequestFailed : (e) ->
-      progressbarModel.failed()
-
-
   # these are observed by photosModel
   flickrApiManager.on('urlready', 'initPhotos', photosModel)
   flickrApiManager.on "apirequestfailed", "failed", progressbarModel
