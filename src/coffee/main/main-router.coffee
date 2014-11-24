@@ -1,5 +1,5 @@
 # debug code start ->
-window.watch = ->
+ltWatch = require '../util/ltWatch.coffee'
 # <- debug code end
 
 flickrApiManager = require '../flickr/flickr-api-manager'
