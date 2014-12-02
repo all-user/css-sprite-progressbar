@@ -1,12 +1,12 @@
 makePublisher = require '../util/publisher'
 makeStateful = require '../util/stateful'
+DHTMLSprite = require '../util/DHTMLSprite'
 
 progressbarView =
   el :
     gaugeBox : document.getElementById('gauge-box')
     background : document.getElementById('background-window')
     arrowBox : document.getElementById('arrow-box')
-    tiles : document.getElementsByClassName('arrow-tile')
     progress : document.getElementById('progress-bar')
     failedMsg : document.getElementById('failed-msg')
 
@@ -24,16 +24,12 @@ progressbarView =
   framerate : 16
 
   progressbar :
-    currentSprite : 0
     passingWidth : 0
     recentWidth : 0
     countTime : 0
     settings :
       durationTime : 1500
       easing : 'easeOutExpo'
-      tileSize :
-        width :100
-        heigth : 20
 
   display :
     opacity : 0
@@ -59,6 +55,21 @@ progressbarView =
   initDisplay : ->
     this.display.countTime = 0
 
+
+  spriteTile : (options) ->
+    { x, y } = options
+    index = 0
+    sprite = DHTMLSprite(options)
+    sprite.draw(x, y)
+
+    sprite.update = () ->
+      index++
+      index %= 28
+      sprite.changeImage index
+
+    sprite
+
+
   progressbarUpdate : ->
 
   makeProgressbarUpdate : ->
@@ -66,11 +77,18 @@ progressbarView =
     framerate = this.framerate
     progressbar = this.progressbar
     settings = progressbar.settings
-    tileWidth = settings.tileSize.width
-    tileHeight = settings.tileSize.heigth
     duration = settings.durationTime / framerate | 0
     easing = this.easing[settings.easing]
-    tiles = this.el.tiles
+    tiles = [0, 100, 200, 300, 400, 500].map (pos) =>
+      this.spriteTile
+        x : pos
+        y : 0
+        width : 100
+        height : 20
+        imagesWidth : 400
+        drawTarget : this.el.arrowBox
+        images: './images/arrow.png'
+
     progressbarStyle = this.el.progress.style
     arrowboxStyle = this.el.arrowBox.style
     frame = 0
@@ -81,17 +99,13 @@ progressbarView =
       progressbar.passingWidth = +progressbarStyle.width.replace('%', '')
       this.fire('ratiorendered', null)
 
-    _genPosition = (current) ->
-      "#{ current % 4 * -tileWidth }px #{ (current / 4 | 0) * -tileHeight }px"
-
     this.progressbarUpdate = =>
       # debug code start ->
       ltWatch progressbar
       # <- debug code end
       if ++frame % 2 is 0
-        for v in tiles
-          v.style.backgroundPosition = _genPosition(progressbar.currentSprite)
-        progressbar.currentSprite = ++progressbar.currentSprite % 28
+        for tile in tiles
+          tile.update()
 
       if frame % 50 is 0
         _renderRatio() if model.canRenderRatio

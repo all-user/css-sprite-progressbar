@@ -1,2 +1,3 @@
-ltWatch = (e) ->
-  e
+ltWatch = () ->
+
+module.exports = ltWatch

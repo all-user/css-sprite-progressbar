@@ -35,6 +35,7 @@ gulp.task 'lint', ->
     .pipe coffeelint()
     .pipe coffeelint.reporter()
 
+
 gulp.task 'paraout', ->
   dir = [
     'flickr'
@@ -44,6 +45,7 @@ gulp.task 'paraout', ->
     'renderer'
     'util'
     'main'
+    'test'
   ]
 
   tasks = []
@@ -54,5 +56,22 @@ gulp.task 'paraout', ->
     )
 
   merge tasks...
+
+
+gulp.task 'build_test_case', ->
+  tests = [
+    'DHTMLSpriteTest'
+  ]
+
+  tasks = tests.map (testName) ->
+    browserify
+      entries : ["./src/coffee/test/#{ testName }.coffee"]
+      extensions : ['.coffee']
+    .bundle()
+    .pipe source 'test.js'
+    .pipe gulp.dest "./test/#{ testName }/"
+
+  merge tasks...
+
 
 gulp.task 'default', ['lint', 'browserify', 'paraout']
