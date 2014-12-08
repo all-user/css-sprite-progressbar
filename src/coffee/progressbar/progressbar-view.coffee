@@ -1,6 +1,9 @@
 makePublisher = require '../util/publisher'
 makeStateful = require '../util/stateful'
 DHTMLSprite = require '../util/DHTMLSprite'
+renderer = require '../renderer/renderer'
+
+baseFPS = renderer.targetFPS
 
 progressbarView =
   el :
@@ -21,15 +24,20 @@ progressbarView =
     middle : 4
     fast : 8
 
-  framerate : 16
+  framerate: renderer.framerate
 
-  progressbar :
-    passingWidth : 0
-    recentWidth : 0
-    countTime : 0
-    settings :
-      durationTime : 1500
-      easing : 'easeOutExpo'
+  progressbar:
+    passingWidth: 0
+    recentWidth: 0
+    countTime: 0
+    settings:
+      durationTime: 1500
+      easing: 'easeOutExpo'
+      targetFPS:
+        tile: 20
+        slide: 30
+        bar: 60
+        ratio: 1.2
 
   display :
     opacity : 0
@@ -77,7 +85,7 @@ progressbarView =
     framerate = this.framerate
     progressbar = this.progressbar
     settings = progressbar.settings
-    duration = settings.durationTime / framerate | 0
+    duration = settings.durationTime / (1000 / settings.targetFPS.bar) | 0
     easing = this.easing[settings.easing]
     tiles = [0, 100, 200, 300, 400, 500].map (pos) =>
       this.spriteTile
@@ -92,11 +100,12 @@ progressbarView =
     progressbarStyle = this.el.progress.style
     arrowboxStyle = this.el.arrowBox.style
 
-    tileCoeff = 0.5
-    slideCoeff = 1
-    barCoeff = 1
-    ratioCoeff = 0.02
+    tileCoeff = settings.targetFPS.tile / baseFPS
+    slideCoeff = settings.targetFPS.slide / baseFPS
+    barCoeff = settings.targetFPS.bar / baseFPS
+    ratioCoeff = settings.targetFPS.ratio / baseFPS
     updateCounter = 0
+    slideCounter = 0
 
     _renderRatio = =>
       progressbar.countTime = 0
@@ -126,14 +135,9 @@ progressbarView =
           duration
         ) + '%'
 
-        ltWatch
-          countTime: progressbar.countTime
-          passingWidth: progressbar.passingWidth
-          recentWidth: progressbar.recentWidth
-          duration: duration
+      slideCounter += tCoeff * slideCoeff
+      arrowboxStyle.left = "#{ slideCounter * this.speed[model.flowSpeed] % 100 - 100 }px"
 
-
-      arrowboxStyle.left = "#{ updateCounter * 100 * slideCoeff * this.speed[model.flowSpeed] % 100 - 100 }px"
       updateCounter %= 1
 
   fadingUpdate : ->

@@ -5,7 +5,7 @@ timeInfo = require '../util/timeInfo'
 renderer =
   updaters : []
   framerate : 16
-  targetFPS : 30
+  targetFPS : 60
   timerID : null
 
   _state :
