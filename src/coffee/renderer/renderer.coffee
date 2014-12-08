@@ -1,9 +1,11 @@
 makePublisher = require '../util/publisher'
 makeStateful = require '../util/stateful'
+timeInfo = require '../util/timeInfo'
 
 renderer =
   updaters : []
   framerate : 16
+  targetFPS : 30
   timerID : null
 
   _state :
@@ -40,11 +42,15 @@ renderer =
     this.draw = =>
       return if this._state.running
 
+      coeffTimer = timeInfo this.targetFPS
+
       this.changeState(running : yes)
+
       this.timerID = setInterval( =>
+        info = coeffTimer.getInfo()
         for v, i in updaters
           try
-            v()
+            v(info.coefficient)
           catch e
             try
               new Error("Error in draw : e -> #{ e }")

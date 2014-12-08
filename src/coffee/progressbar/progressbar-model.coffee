@@ -90,7 +90,7 @@ progressbarModel =
 
   getProgress : (process) ->
     res = this._state.numerator / this._state.denominator
-    Math[this.processType[process]](res) if this.processType.hasOwnProperty(process)
+    res = Math[this.processType[process]](res) if this.processType.hasOwnProperty(process)
     res
 
 makePublisher(progressbarModel)
