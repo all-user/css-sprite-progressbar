@@ -66,10 +66,10 @@ document.addEventListener 'DOMContentLoaded', ->
 
   # these are observed by photosModel
   flickrApiManager.on('urlready', 'initPhotos', photosModel)
-  flickrApiManager.on "apirequestfailed", "failed", progressbarModel
   inputView.on('canselclick', 'handleCanselClick', mediator)
 
   # these are observed by progressbarModel
+  flickrApiManager.on "apirequestfailed", "failed", progressbarModel
   flickrApiManager.on('urlready', 'setDenomiPhotosLength', mediator)
   photosModel.on('clearunloaded', 'setDenominator', progressbarModel)
   photosModel.on('loadedincreased', 'setNumerator', progressbarModel)
