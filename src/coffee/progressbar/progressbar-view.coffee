@@ -24,8 +24,6 @@ progressbarView =
 
   globalFPS: null
 
-  framerate: null
-
   progressbar:
     passingWidth: 0
     recentWidth: 0
@@ -36,15 +34,16 @@ progressbarView =
       targetFPS:
         tile: 20
         slide: 30
-        bar: 60
         ratio: 1.2
+      resolutionFPS: 5
 
   display :
     opacity : 0
     countTime : 0
     settings :
-      durationTime : 200
+      durationTime : 1500
       easing : 'easeOutSine'
+      resolutionFPS: null
 
   easing :
     easeOutSine : (t, b, c, d) ->
@@ -55,9 +54,6 @@ progressbarView =
 
   setGlobalFPS: (FPS) ->
     this.globalFPS = FPS
-
-  setFramerate: (framerate) ->
-    this.framerate = framerate
 
   initProgressbar : ->
     this.progressbar.countTime = 0
@@ -92,7 +88,7 @@ progressbarView =
     model = this._state.model
     progressbar = this.progressbar
     settings = progressbar.settings
-    duration = settings.durationTime / (1000 / settings.targetFPS.bar) | 0
+    duration = settings.durationTime / (1000 / this.globalFPS)
     easing = this.easing[settings.easing]
     tiles = [0, 100, 200, 300, 400, 500].map (pos) =>
       this.spriteTile
@@ -109,7 +105,6 @@ progressbarView =
 
     tileCoeff = settings.targetFPS.tile / this.globalFPS
     slideCoeff = settings.targetFPS.slide / this.globalFPS
-    barCoeff = settings.targetFPS.bar / this.globalFPS
     ratioCoeff = settings.targetFPS.ratio / this.globalFPS
     updateCounter = 0
     slideCounter = 0
@@ -119,6 +114,13 @@ progressbarView =
       progressbar.recentWidth = model.progress * 100
       progressbar.passingWidth = +progressbarStyle.width.replace('%', '')
       this.fire('ratiorendered', null)
+
+    _throttle =
+      if settings.resolutionFPS == null
+        (countTime) -> countTime
+      else
+        resolutionFramerate = this.globalFPS / settings.resolutionFPS
+        (countTime) -> countTime - (countTime % resolutionFramerate)
 
     this.progressbarUpdate = (tCoeff) =>
       # debug code start ->
@@ -134,9 +136,9 @@ progressbarView =
         this.changeState(full : yes) if model.canQuit and (+progressbarStyle.width.replace '%', '') >= 100
 
       if progressbar.countTime <= duration
-        progressbar.countTime += tCoeff * barCoeff
+        progressbar.countTime += tCoeff
         progressbarStyle.width = easing(
-          progressbar.countTime
+          _throttle progressbar.countTime
           progressbar.passingWidth
           progressbar.recentWidth - progressbar.passingWidth + 1 | 0
           duration
@@ -151,14 +153,20 @@ progressbarView =
 
   makeFadingUpdate : ->
     model = this._state.model
-    framerate = this.framerate
     display = this.display
     settings = display.settings
-    duration = settings.durationTime / framerate | 0
+    duration = settings.durationTime / (1000 / this.globalFPS)
     easing = this.easing[settings.easing]
     gaugeboxStyle = this.el.gaugeBox.style
     backgroundStyle = this.el.background.style
-    frame = 0
+
+    _throttle =
+      if settings.resolutionFPS == null
+        (countTime) -> countTime
+      else
+        resolutionFramerate = this.globalFPS / settings.resolutionFPS
+        (countTime) -> countTime - (countTime % resolutionFramerate)
+
 
     this.makeFadingUpdate = =>
       type = model.fading
@@ -169,9 +177,9 @@ progressbarView =
         when 'in' then targetOpacity = 1
         when 'out' then targetOpacity = 0
 
-      this.fadingUpdate = =>
+      this.fadingUpdate = (tCoeff) =>
         display.opacity = easing(
-          display.countTime
+          _throttle display.countTime
           currentOpacity
           targetOpacity - currentOpacity
           duration
@@ -187,7 +195,7 @@ progressbarView =
           this.initDisplay()
           return
 
-        display.countTime++
+        display.countTime += tCoeff
 
     this.makeFadingUpdate()
 
