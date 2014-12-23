@@ -31,7 +31,7 @@ gulp.task 'watch', ->
   rebundle()
 
 gulp.task 'lint', ->
-  gulp.src './src/coffee/**/*.coffee', './src/coffee/*.coffee'
+  gulp.src ['./src/coffee/**/*.coffee', './src/coffee/*.coffee']
     .pipe coffeelint()
     .pipe coffeelint.reporter()
 
