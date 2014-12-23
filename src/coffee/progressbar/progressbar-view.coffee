@@ -1,9 +1,7 @@
 makePublisher = require '../util/publisher'
 makeStateful = require '../util/stateful'
 DHTMLSprite = require '../util/DHTMLSprite'
-renderer = require '../renderer/renderer'
 
-baseFPS = renderer.targetFPS
 
 progressbarView =
   el :
@@ -24,7 +22,9 @@ progressbarView =
     middle : 4
     fast : 8
 
-  framerate: renderer.framerate
+  globalFPS: null
+
+  framerate: null
 
   progressbar:
     passingWidth: 0
@@ -53,6 +53,12 @@ progressbarView =
     easeOutExpo : (t, b, c, d) ->
       if (t is d) then b+c else c * (-Math.pow(2, -10 * t/d) + 1) + b
 
+  setGlobalFPS: (FPS) ->
+    this.globalFPS = FPS
+
+  setFramerate: (framerate) ->
+    this.framerate = framerate
+
   initProgressbar : ->
     this.progressbar.countTime = 0
     this.progressbar.passingWidth = 0
@@ -62,7 +68,6 @@ progressbarView =
 
   initDisplay : ->
     this.display.countTime = 0
-
 
   spriteTile : (options) ->
     { x, y } = options
@@ -81,8 +86,10 @@ progressbarView =
   progressbarUpdate : ->
 
   makeProgressbarUpdate : ->
+    if this.globalFPS == null
+      throw new Error 'Must define globalFPS.'
+
     model = this._state.model
-    framerate = this.framerate
     progressbar = this.progressbar
     settings = progressbar.settings
     duration = settings.durationTime / (1000 / settings.targetFPS.bar) | 0
@@ -100,10 +107,10 @@ progressbarView =
     progressbarStyle = this.el.progress.style
     arrowboxStyle = this.el.arrowBox.style
 
-    tileCoeff = settings.targetFPS.tile / baseFPS
-    slideCoeff = settings.targetFPS.slide / baseFPS
-    barCoeff = settings.targetFPS.bar / baseFPS
-    ratioCoeff = settings.targetFPS.ratio / baseFPS
+    tileCoeff = settings.targetFPS.tile / this.globalFPS
+    slideCoeff = settings.targetFPS.slide / this.globalFPS
+    barCoeff = settings.targetFPS.bar / this.globalFPS
+    ratioCoeff = settings.targetFPS.ratio / this.globalFPS
     updateCounter = 0
     slideCounter = 0
 
