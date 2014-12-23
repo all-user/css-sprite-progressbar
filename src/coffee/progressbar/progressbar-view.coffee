@@ -29,19 +29,19 @@ progressbarView =
     recentWidth: 0
     countTime: 0
     settings:
-      durationTime: 1500
+      durationTime: 1200
       easing: 'easeOutExpo'
       targetFPS:
         tile: 20
         slide: 30
         ratio: 1.2
-      resolutionFPS: 5
+      resolutionFPS: null
 
   display :
     opacity : 0
     countTime : 0
     settings :
-      durationTime : 1500
+      durationTime : 500
       easing : 'easeOutSine'
       resolutionFPS: null
 
