@@ -3,7 +3,6 @@
   "version": "0.0.1",
   "description": "",
   "main": "js/index.js",
-  "dependencies": {},
   "browserify": {
     "transform": [
       "coffeeify"
@@ -19,7 +18,8 @@
     "gulp-coffeelint": "*",
     "gulp-util": "^2.2.19",
     "vinyl-source-stream": "*",
-    "watchify": "^0.10.2"
+    "watchify": "^0.10.2",
+    "rx": "^2.3.22"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

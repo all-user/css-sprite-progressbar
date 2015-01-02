@@ -51,9 +51,17 @@ document.addEventListener 'DOMContentLoaded', ->
       progressbarModel.run()
       photosModel.clear()
       progressbarModel.resque()
-      flickrApiManager.setAPIOptions(inputView.getOptions())
-      photosModel.setProperties(maxConcurrentRequest : inputView.getMaxConcurrentRequest())
+      inputData = inputView.getState()
+
+      flickrApiManager.setAPIOptions
+        text: inputView.getState 'searchText'
+        per_page: inputView.getState 'perPage'
+
+      photosModel.setProperties
+        maxConcurrentRequest: inputView.getState 'maxReq'
+
       flickrApiManager.sendRequestJSONP()
+
 
     handleCanselClick : ->
       photosModel.clearUnloaded()
@@ -62,7 +70,6 @@ document.addEventListener 'DOMContentLoaded', ->
         progressbarModel.fadeOut()
       if progressbarModel.getState "failed"
         progressbarModel.fadeOut()
-
 
   # these are observed by photosModel
   flickrApiManager.on('urlready', 'initPhotos', photosModel)
@@ -86,7 +93,3 @@ document.addEventListener 'DOMContentLoaded', ->
 
   # inputView is observed by mediator
   inputView.on('searchclick', 'handleButtonClick', mediator)
-
-
-  # debug code start ->
-  # <- debug code end

@@ -1,7 +1,8 @@
+Rx = require 'rx'
+
 makePublisher = require '../util/publisher'
 makeStateful = require '../util/stateful'
 DHTMLSprite = require '../util/DHTMLSprite'
-
 
 progressbarView =
   el :

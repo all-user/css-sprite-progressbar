@@ -1,3 +1,4 @@
+Rx = require 'rx'
 makePublisher = require '../util/publisher'
 makeStateful= require '../util/stateful'
 
@@ -26,6 +27,13 @@ inputView =
 
     options
 
+  keyupStream: do ->
+    el = document.querySelector '#input-window form'
+    Rx.Observable.fromEvent el, 'keyup'
+      .map (e) -> e.target
+      .filter (el) ->
+        el.nodeName == 'INPUT'
+
   getMaxConcurrentRequest : ->
     maxReq = this.el.maxReq.value
     maxReq ? false
@@ -36,20 +44,29 @@ inputView =
   handleCansel : (e) ->
     this.fire('canselclick', e)
 
-  handleInputKeyup : (e) ->
-    return if e.target.tagName unless 'INPUT'
-    id = e.target.id.replace /(\w+)-(\w+)/, (match, p1, p2) ->
-      "#{ p1 }#{ p2[0].toUpperCase() }#{ p2.substr 1 }"
-    oldValue = this._state[id]
-    newValue = e.target.value
-    this.changeState id, newValue if newValue isnt oldValue
-
 makePublisher inputView
 makeStateful inputView
 
 inputView.el.searchButton.addEventListener('click', inputView.handleClick.bind(inputView))
 inputView.el.canselButton.addEventListener('click', inputView.handleCansel.bind(inputView))
-inputView.el.inputWindow.addEventListener('keyup', inputView.handleInputKeyup.bind(inputView))
+
+inputView.keyupStream.subscribe(
+  (e) ->
+    toCamelCase = (s) ->
+      s.replace(
+        /(\w+)-(\w+)/,
+        (m, c1, c2) ->
+          c1 + c2[0].toUpperCase() + c2.substr 1)
+
+    data = {}
+    data[toCamelCase e.id] = e.value
+    inputView.changeState data
+    console.log inputView
+  , (e) ->
+    console.log 'keyup subscribe error', e
+  , ->
+    console.log 'keyup subscribe on conplete')
+
 
 inputView.changeState
   searchText : inputView.el.searchText.value
