@@ -1,3 +1,5 @@
+makePublisher = require './publisher'
+
 stateful =
   _state : {}
 
@@ -20,22 +22,22 @@ stateful =
   _changeState : (statusObj, marge) ->
     state = this._state
     changed = no
-
     for type, status of statusObj
       changeOwnProp = state.hasOwnProperty(type) and state[type] isnt status
       margeProp = not state.hasOwnProperty(type) and marge
-
       if changeOwnProp or margeProp
         changed = yes
         state[type] = status
         newStatus = {}
         newStatus[type] = status
         this.fire("#{ type.toLowerCase() }change", newStatus)
-
     this.fire("statechange", state) if changed
 
-module.exports = (o) ->
+
+makeStateful = (o) ->
   for own i, v of stateful
     o[i] = v if typeof v is 'function'
-
   o._state = o._state || {}
+  makePublisher o
+
+module.exports = makeStateful

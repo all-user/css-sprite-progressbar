@@ -1,4 +1,3 @@
-makePublisher = require '../util/publisher'
 makeStateful = require '../util/stateful'
 timeInfo = require '../util/timeInfo'
 
@@ -72,7 +71,6 @@ renderer =
       , this.framerate)
 
 renderer.makeDraw()
-makePublisher(renderer)
 makeStateful(renderer)
 
 module.exports = renderer

@@ -1,5 +1,4 @@
 Rx = require 'rx'
-makePublisher = require '../util/publisher'
 makeStateful= require '../util/stateful'
 
 window.dom = document.querySelector '#input-window'
@@ -36,7 +35,6 @@ window.inputView =
     maxReq = this.elem.maxReq.value
     maxReq ? false
 
-makePublisher inputView
 makeStateful inputView
 
 toCamelCase = (s) ->

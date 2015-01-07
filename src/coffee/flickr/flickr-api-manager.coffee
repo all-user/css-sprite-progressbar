@@ -37,42 +37,31 @@ flickrApiManager =
       console.log("fileName -> #{ e.fileName || e.sourceURL }")
       console.log("line -> #{ e.line || e.lineNumber }")
 
-
   sendRequestJSONP : (options) ->
     return false if this._state.waiting
-
     this.changeState('waiting' : yes)
-
     newScript = document.createElement('script')
     oldScript = document.getElementById('kick-api')
-
     this.setAPIOptions(options) if options?
     this.validateOptions()
-
     newScript.id = 'kick-api'
     newScript.src = this.genURI(this.apiOptions)
     newScript.onerror = (e) =>
       this._state.waiting = no
       this.fire "apirequestfailed", e
-
     if oldScript?
       document.body.replaceChild(newScript, oldScript)
     else
       document.body.appendChild(newScript)
-
     this.fire('sendrequest', null)
 
   genURI : (options) ->
     uri = "api_key=#{options.apiKey}"
-
     for own k, v of options.others
       uri += "&#{k}=#{v}"
-
     uri += "&format=#{options.format}"
-
     noJsonp = options.format is 'json' and options.noJsonCallback
     uri += 'noJsonCallback' if noJsonp
-
     return "https://api.flickr.com/services/rest/?method=flickr.photos.search&#{uri}"
 
   genPhotosURLArr : (json) ->
@@ -87,7 +76,6 @@ flickrApiManager =
 
 
 makePublisher(jsonFlickrApi)
-makePublisher(flickrApiManager)
 makeStateful(flickrApiManager)
 jsonFlickrApi.on('apiresponse', 'handleAPIResponse', flickrApiManager)
 

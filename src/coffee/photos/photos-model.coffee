@@ -1,4 +1,3 @@
-makePublisher = require '../util/publisher'
 makeStateful = require '../util/stateful'
 
 photosModel =
@@ -121,7 +120,6 @@ photosModel =
     res
 
 
-makePublisher(photosModel)
 makeStateful(photosModel)
 
 module.exports = photosModel

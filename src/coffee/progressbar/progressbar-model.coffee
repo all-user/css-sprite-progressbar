@@ -1,4 +1,3 @@
-makePublisher = require '../util/publisher'
 makeStateful = require '../util/stateful'
 
 progressbarModel =
@@ -93,7 +92,6 @@ progressbarModel =
     res = Math[this.processType[process]](res) if this.processType.hasOwnProperty(process)
     res
 
-makePublisher(progressbarModel)
 makeStateful(progressbarModel)
 
 module.exports = progressbarModel
