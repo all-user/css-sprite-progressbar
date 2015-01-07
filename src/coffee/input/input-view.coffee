@@ -21,10 +21,8 @@ window.inputView =
     options =
       text     : this.elem.searchText.value
       per_page : this.elem.perPage.value
-
     for own k of options
       delete options[k] if options[k] is ''
-
     options
 
   keyupStream: Rx.Observable.fromEvent dom, 'keyup'
@@ -38,13 +36,8 @@ window.inputView =
     maxReq = this.elem.maxReq.value
     maxReq ? false
 
-#   handleCansel : (e) ->
-#     this.fire('canselclick', e)
-
 makePublisher inputView
 makeStateful inputView
-
-# inputView.elem.canselButton.addEventListener('click', inputView.handleCansel.bind(inputView))
 
 toCamelCase = (s) ->
   s.replace(
@@ -57,7 +50,6 @@ inputView.keyupStream.subscribe(
     data = {}
     data[toCamelCase e.id] = e.value
     inputView.changeState data
-#     console.log inputView
   , (e) ->
     console.log 'keyup subscribe error', e
   , ->
