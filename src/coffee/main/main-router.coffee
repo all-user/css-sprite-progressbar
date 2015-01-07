@@ -92,4 +92,26 @@ document.addEventListener 'DOMContentLoaded', ->
   progressbarModel.on('stop', 'pause', renderer)
 
   # inputView is observed by mediator
-  inputView.on('searchclick', 'handleButtonClick', mediator)
+#   inputView.on('searchclick', 'handleButtonClick', mediator)
+
+  inputView.clickStream
+    .filter (e) -> e.target == inputView.elem.searchButton
+    .subscribe(
+      (e) ->
+        progressbarModel.run()
+        photosModel.clear()
+        progressbarModel.resque()
+        inputData = inputView.getState()
+
+        flickrApiManager.setAPIOptions
+          text: inputView.getState 'searchText'
+          per_page: inputView.getState 'perPage'
+
+        photosModel.setProperties
+          maxConcurrentRequest: inputView.getState 'maxReq'
+
+        flickrApiManager.sendRequestJSONP()
+      , (e) ->
+        console.log 'searchclick subscribe error', e
+      , ->
+        console.log 'searchclick subscribe on conplete')
