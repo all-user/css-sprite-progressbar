@@ -46,34 +46,9 @@ document.addEventListener 'DOMContentLoaded', ->
           this.store.fadingUpdater = progressbarView.fadingUpdate
           renderer.addUpdater(this.store.fadingUpdater)
 
-    # inputView is observed by these methods
-    handleButtonClick : ->
-      progressbarModel.run()
-      photosModel.clear()
-      progressbarModel.resque()
-      inputData = inputView.getState()
-
-      flickrApiManager.setAPIOptions
-        text: inputView.getState 'searchText'
-        per_page: inputView.getState 'perPage'
-
-      photosModel.setProperties
-        maxConcurrentRequest: inputView.getState 'maxReq'
-
-      flickrApiManager.sendRequestJSONP()
-
-
-    handleCanselClick : ->
-      photosModel.clearUnloaded()
-      if flickrApiManager.getState 'waiting'
-        flickrApiManager.changeState 'waiting': no
-        progressbarModel.fadeOut()
-      if progressbarModel.getState "failed"
-        progressbarModel.fadeOut()
 
   # these are observed by photosModel
   flickrApiManager.on('urlready', 'initPhotos', photosModel)
-  inputView.on('canselclick', 'handleCanselClick', mediator)
 
   # these are observed by progressbarModel
   flickrApiManager.on "apirequestfailed", "failed", progressbarModel
@@ -92,7 +67,21 @@ document.addEventListener 'DOMContentLoaded', ->
   progressbarModel.on('stop', 'pause', renderer)
 
   # inputView is observed by mediator
-#   inputView.on('searchclick', 'handleButtonClick', mediator)
+  inputView.clickStream
+    .filter (e) -> e.target == inputView.elem.canselButton
+    .subscribe(
+      (e) ->
+        photosModel.clearUnloaded()
+        if flickrApiManager.getState 'waiting'
+          flickrApiManager.changeState 'waiting': no
+          progressbarModel.fadeOut()
+        if progressbarModel.getState "failed"
+          progressbarModel.fadeOut()
+      , (e) ->
+        console.log 'canselclick subscribe error', e
+      , ->
+        console.log 'canselclick subscribe on complete')
+
 
   inputView.clickStream
     .filter (e) -> e.target == inputView.elem.searchButton
@@ -114,4 +103,4 @@ document.addEventListener 'DOMContentLoaded', ->
       , (e) ->
         console.log 'searchclick subscribe error', e
       , ->
-        console.log 'searchclick subscribe on conplete')
+        console.log 'searchclick subscribe on complete')

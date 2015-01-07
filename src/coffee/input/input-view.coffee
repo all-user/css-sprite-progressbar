@@ -38,17 +38,13 @@ window.inputView =
     maxReq = this.elem.maxReq.value
     maxReq ? false
 
-#   handleClick : (e) ->
-#     this.fire('searchclick', e)
-
-  handleCansel : (e) ->
-    this.fire('canselclick', e)
+#   handleCansel : (e) ->
+#     this.fire('canselclick', e)
 
 makePublisher inputView
 makeStateful inputView
 
-# inputView.elem.searchButton.addEventListener('click', inputView.handleClick.bind(inputView))
-inputView.elem.canselButton.addEventListener('click', inputView.handleCansel.bind(inputView))
+# inputView.elem.canselButton.addEventListener('click', inputView.handleCansel.bind(inputView))
 
 toCamelCase = (s) ->
   s.replace(
