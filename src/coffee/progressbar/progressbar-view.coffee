@@ -1,6 +1,5 @@
 Rx = require 'rx'
 
-makePublisher = require '../util/publisher'
 makeStateful = require '../util/stateful'
 DHTMLSprite = require '../util/DHTMLSprite'
 
@@ -216,7 +215,6 @@ progressbarView =
     this.fire('hide', null) if prop is "none"
 
 
-makePublisher(progressbarView)
 makeStateful(progressbarView)
 
 module.exports = progressbarView

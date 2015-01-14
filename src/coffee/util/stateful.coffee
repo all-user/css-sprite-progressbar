@@ -1,7 +1,10 @@
+Rx = require 'rx'
 makePublisher = require './publisher'
 
 stateful =
   _state : {}
+
+  changedStream: null
 
   changeState : (prop, value) ->
     if typeof prop is 'object'
@@ -30,14 +33,13 @@ stateful =
         state[type] = status
         newStatus = {}
         newStatus[type] = status
-        this.fire("#{ type.toLowerCase() }change", newStatus)
-    this.fire("statechange", state) if changed
-
+    this.changedStream.onNext state if changed
 
 makeStateful = (o) ->
   for own i, v of stateful
     o[i] = v if typeof v is 'function'
   o._state = o._state || {}
+  o.changedStream = new Rx.Subject()
   makePublisher o
 
 module.exports = makeStateful

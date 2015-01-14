@@ -28,12 +28,35 @@ mediator =
 # these are observed by progressbarModel
 progressbarModel.on('run', 'fadeIn', progressbarModel)
 progressbarView.on('ratiorendered', 'handleRendered', mediator)
-progressbarView.on('fullchange', 'handleFull', mediator)
+
+progressbarView
+  .changedStream
+  .distinctUntilChanged (state) -> state.full
+  .subscribe(
+    mediator.handleFull,
+    (e) -> console.log 'progressbarView on full changed Error: ', e,
+    -> console.log 'progressbarView on full changed complete')
+
 progressbarView.on('fadeend', 'fadeStop', progressbarModel)
 progressbarView.on('hide', 'handleHide', mediator)
 
 # these are observed by progressbarView
 progressbarView.changeState(model : progressbarModel._state)
-progressbarModel.on('fadingchange', 'fadeInOut', progressbarView)
-progressbarModel.on "failedchange", "handleFailedChange", mediator
+
+progressbarModel
+  .changedStream
+  .distinctUntilChanged (state) -> state.fading
+  .subscribe(
+    (state) -> progressbarView.fadeInOut state,
+    (e) -> console.log 'progressbarModel on fading changed Error: ', e,
+    -> console.log 'progressbarModel on fading changed complete')
+
+progressbarModel
+  .changedStream
+  .distinctUntilChanged (state) -> state.failed
+  .subscribe(
+    mediator.handleFailedChange,
+    (e) -> console.log 'progressbarModel on failed changed Error: ', e,
+    -> console.log 'progressbarModel on failed changed complete')
+
 progressbarView.on('hide', 'initProgressbar', progressbarView)

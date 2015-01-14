@@ -55,14 +55,49 @@ document.addEventListener 'DOMContentLoaded', ->
   flickrApiManager.on('urlready', 'setDenomiPhotosLength', mediator)
   photosModel.on('clearunloaded', 'setDenominator', progressbarModel)
   photosModel.on('loadedincreased', 'setNumerator', progressbarModel)
-  flickrApiManager.on('waitingchange', 'checkCanQuit', mediator)
-  photosModel.on('completedchange', 'checkCanQuit', mediator)
-  flickrApiManager.on('waitingchange', 'decideFlowSpeed', mediator)
+
+  flickrWaitingChangedStream = flickrApiManager
+    .changedStream
+    .distinctUntilChanged (state) -> state.waiting
+
+  flickrWaitingChangedStream.subscribe(
+    mediator.checkCanQuit,
+    (e) -> console.log 'flickrApiManager on waiting changed Error: ', e,
+    -> console.log 'flickrApiManager on waiting changed complete')
+
+  flickrWaitingChangedStream.subscribe(
+    mediator.decideFlowSpeed,
+    (e) -> console.log 'flickrApiManager on waiting changed Error: ', e,
+    -> console.log 'flickrApiManager on waiting changed complete')
+
+  photosModel
+    .changedStream
+    .distinctUntilChanged (state) -> state.completed
+    .subscribe(
+      mediator.checkCanQuit,
+      (e) -> console.log 'flickrApiManager on completed changed Error: ', e,
+      -> console.log 'flickrApiManager on completed changed complete')
+
   photosModel.on('clear', 'clear', progressbarModel)
-  progressbarView.on('fullchange', 'decideFlowSpeed', mediator)
+
+  progressbarView
+    .changedStream
+    .distinctUntilChanged (state) -> state.full
+    .subscribe(
+      mediator.decideFlowSpeed,
+      (e) -> console.log 'progressbarView on full changed Error: ', e,
+      -> console.log 'progressbarView on full changed complete')
 
   # these are observed by renderer
-  progressbarModel.on('fadingchange', 'handleFading', mediator)
+  progressbarModel
+    .changedStream
+    .distinctUntilChanged (state) -> state.fading
+    .subscribe(
+      (state) ->
+        mediator.handleFading state,
+      (e) -> console.log 'progressbarModel on fading changed Error: ', e,
+      -> console.log 'progressbarModel on fading changed complete')
+
   progressbarModel.on('run', 'draw', renderer)
   progressbarModel.on('stop', 'pause', renderer)
 
