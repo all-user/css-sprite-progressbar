@@ -19,7 +19,6 @@ mediator =
     if progressbarModel.getState("failed")
       progressbarView.el.arrowBox.style.display =
       progressbarView.el.progress.style.display = "none"
-      renderer.deleteUpdater progressbarView.progressbarUpdate
       progressbarView.showFailedMsg()
     else
       progressbarView.el.arrowBox.style.display =
