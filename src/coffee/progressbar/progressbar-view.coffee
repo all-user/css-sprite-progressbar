@@ -133,14 +133,15 @@ progressbarView =
       updateCounter += tCoeff * ratioCoeff
       if updateCounter > 1
         _renderRatio() if model.canRenderRatio
-        this.changeState(full : yes) if model.canQuit and (+progressbarStyle.width.replace '%', '') >= 100
+        if model.canQuit and (+progressbarStyle.width.replace '%', '') >= 99.9
+          this.changeState(full : yes)
 
       if progressbar.countTime <= duration
         progressbar.countTime += tCoeff
         progressbarStyle.width = easing(
           _throttle progressbar.countTime
           progressbar.passingWidth
-          progressbar.recentWidth - progressbar.passingWidth + 1 | 0
+          progressbar.recentWidth - progressbar.passingWidth
           duration
         ) + '%'
 
