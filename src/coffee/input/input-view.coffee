@@ -47,10 +47,10 @@ inputView.keyupStream.subscribe(
   (e) ->
     data = {}
     data[toCamelCase e.id] = e.value
-    inputView.changeState data
-  , (e) ->
-    console.log 'keyup subscribe error', e
-  , ->
+    inputView.changeState data,
+  (e) ->
+    console.log 'keyup subscribe error', e,
+  ->
     console.log 'keyup subscribe on conplete')
 
 inputView.changeState
