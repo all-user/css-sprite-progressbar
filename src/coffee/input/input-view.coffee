@@ -16,7 +16,6 @@ initialState =
 
 
 inputView =
-
   elem: elem
 
   changeStream: Rx.Observable.fromEvent(
@@ -31,11 +30,10 @@ inputView =
     maxReq ? false
 
 
-toCamelCase = (s)
+toCamelCase = (s) ->
   s.replace(
-    /(\w+)-(\w+)/,
-    (m, c1, c2) ->
-      c1 + c2[0].toUpperCase() + c2.substr 1)
+    /(\w+)-(\w+)/
+    (m, c1, c2) -> c1 + c2[0].toUpperCase() + c2.substr 1)
 
 inputView.changeStream.subscribe(
   (e) ->
