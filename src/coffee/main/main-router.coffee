@@ -22,14 +22,14 @@ document.addEventListener 'DOMContentLoaded', ->
       progressbarModel.setDenominator(urlArr.length)
 
     checkCanQuit : ->
-      bool = not flickrApiManager.getState('waiting') and photosModel.getState('completed')
-      progressbarModel.changeState(canQuit : bool)
+      bool = not flickrApiManager.stateful.get('waiting') and photosModel.stateful.get('completed')
+      progressbarModel.stateful.set(canQuit : bool)
 
     decideFlowSpeed : ->
       speed =
-        if progressbarView.getState('full')
+        if progressbarView.stateful.get('full') ## use to switch operator
           'fast'
-        else if flickrApiManager.getState('waiting')
+        else if flickrApiManager.stateful.get('waiting')
           'slow'
         else
           'middle'
@@ -38,7 +38,6 @@ document.addEventListener 'DOMContentLoaded', ->
     # these methods access to renderer's methods
     handleFading : (statusObj) ->
       action = statusObj.fading
-
       switch action
         when 'stop'
           renderer.deleteUpdater(this.store.fadingUpdater)
@@ -56,46 +55,41 @@ document.addEventListener 'DOMContentLoaded', ->
   photosModel.on('clearunloaded', 'setDenominator', progressbarModel)
   photosModel.on('loadedincreased', 'setNumerator', progressbarModel)
 
-  flickrWaitingChangedStream = flickrApiManager
-    .changedStream
+  flickrWaitingChangedStream = flickrApiManager.stateful.stream
     .distinctUntilChanged (state) -> state.waiting
 
   flickrWaitingChangedStream.subscribe(
-    mediator.checkCanQuit,
-    (e) -> console.log 'flickrApiManager on waiting changed Error: ', e,
+    mediator.checkCanQuit
+    (e) -> console.log 'flickrApiManager on waiting changed Error: ', e
     -> console.log 'flickrApiManager on waiting changed complete')
 
   flickrWaitingChangedStream.subscribe(
-    mediator.decideFlowSpeed,
-    (e) -> console.log 'flickrApiManager on waiting changed Error: ', e,
+    mediator.decideFlowSpeed
+    (e) -> console.log 'flickrApiManager on waiting changed Error: ', e
     -> console.log 'flickrApiManager on waiting changed complete')
 
-  photosModel
-    .changedStream
+  photosModel.stateful.stream
     .distinctUntilChanged (state) -> state.completed
     .subscribe(
-      mediator.checkCanQuit,
-      (e) -> console.log 'flickrApiManager on completed changed Error: ', e,
+      mediator.checkCanQuit
+      (e) -> console.log 'flickrApiManager on completed changed Error: ', e
       -> console.log 'flickrApiManager on completed changed complete')
 
   photosModel.on('clear', 'clear', progressbarModel)
 
-  progressbarView
-    .changedStream
+  progressbarView.stateful.stream
     .distinctUntilChanged (state) -> state.full
     .subscribe(
-      mediator.decideFlowSpeed,
-      (e) -> console.log 'progressbarView on full changed Error: ', e,
+      mediator.decideFlowSpeed
+      (e) -> console.log 'progressbarView on full changed Error: ', e
       -> console.log 'progressbarView on full changed complete')
 
   # these are observed by renderer
-  progressbarModel
-    .changedStream
+  progressbarModel.stateful.stream
     .distinctUntilChanged (state) -> state.fading
     .subscribe(
-      (state) ->
-        mediator.handleFading state,
-      (e) -> console.log 'progressbarModel on fading changed Error: ', e,
+      (state) -> mediator.handleFading state
+      (e) -> console.log 'progressbarModel on fading changed Error: ', e
       -> console.log 'progressbarModel on fading changed complete')
 
   progressbarModel.on('run', 'draw', renderer)
@@ -107,15 +101,13 @@ document.addEventListener 'DOMContentLoaded', ->
     .subscribe(
       (e) ->
         photosModel.clearUnloaded()
-        if flickrApiManager.getState 'waiting'
-          flickrApiManager.changeState 'waiting': no
+        if flickrApiManager.stateful.get 'waiting'
+          flickrApiManager.stateful.set 'waiting': no
           progressbarModel.fadeOut()
-        if progressbarModel.getState "failed"
+        if progressbarModel.stateful.get "failed"
           progressbarModel.fadeOut()
-      , (e) ->
-        console.log 'canselclick subscribe error', e
-      , ->
-        console.log 'canselclick subscribe on complete')
+      (e) -> console.log 'canselclick subscribe error', e
+      -> console.log 'canselclick subscribe on complete')
 
 
   inputView.clickStream
@@ -125,17 +117,11 @@ document.addEventListener 'DOMContentLoaded', ->
         progressbarModel.run()
         photosModel.clear()
         progressbarModel.resque()
-        inputData = inputView.getState()
-
         flickrApiManager.setAPIOptions
-          text: inputView.getState 'searchText'
-          per_page: inputView.getState 'perPage'
-
+          text: inputView.stateful.get 'searchText'
+          per_page: inputView.stateful.get 'perPage'
         photosModel.setProperties
-          maxConcurrentRequest: inputView.getState 'maxReq'
-
+          maxConcurrentRequest: inputView.stateful.get 'maxReq'
         flickrApiManager.sendRequestJSONP()
-      , (e) ->
-        console.log 'searchclick subscribe error', e
-      , ->
-        console.log 'searchclick subscribe on complete')
+      (e) -> console.log 'searchclick subscribe error', e
+      -> console.log 'searchclick subscribe on complete')

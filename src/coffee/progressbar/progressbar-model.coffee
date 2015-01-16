@@ -1,17 +1,19 @@
+makePublisher = require '../util/publisher'
 makeStateful = require '../util/stateful'
 
-progressbarModel =
-  _state :
-    hidden : yes
-    fading : 'stop'
-    failed : no
-    flowSpeed : 'slow'
-    denominator : 0
-    numerator : 0
-    progress : 0
-    canRenderRatio : no
-    canQuit : no
+initialState =
+  hidden: yes
+  fading: 'stop'
+  failed: no
+  flowSpeed: 'slow'
+  denominator: 0
+  numerator: 0
+  progress: 0
+  canRenderRatio: no
+  canQuit: no
 
+
+progressbarModel =
   speed :
     type :
       stop : 0
@@ -37,39 +39,38 @@ progressbarModel =
     this.fire('stop', this)
 
   clear : ->
-    this.changeState(
-      denominator : 0
-      numerator : 0
-      progress : 0
-      canRenderRatio : yes
-      canQuit : no
-    )
+    this.stateful.set
+      denominator: 0
+      numerator: 0
+      progress: 0
+      canRenderRatio: yes
+      canQuit: no
     this.fire('clear', null)
 
   fadeIn : ->
-    this.changeState(fading : 'in')
+    this.stateful.set 'fading', 'in'
 
   fadeOut : ->
-    this.changeState(fading : 'out')
+    this.stateful.set 'fading', 'out'
 
   fadeStop : ->
-    this.changeState(fading: 'stop')
+    this.stateful.set 'fading', 'stop'
 
   failed : ->
-    this.changeState(failed: yes)
+    this.stateful.set 'failed', yes
 
   resque : ->
-    this.changeState(failed: no)
+    this.stateful.set 'failed', no
 
   setFlowSpeed : (speed) ->
-    this.changeState(flowSpeed : speed) if this.speed.type.hasOwnProperty(speed)
+    this.stateful.set 'flowSpeed', speed if this.speed.type.hasOwnProperty(speed)
 
   flowMoreFaster : ->
-    currentSpeed = this.speed.type[this._state.flowSpeed]
+    currentSpeed = this.speed.type[this.stateful.get 'flowSpeed']
     this.setFlowSpeed(this.speed.array[currentSpeed + 1])
 
   flowMoreSlower : ->
-    currentSpeed = this.speed.type[this._state.flowSpeed]
+    currentSpeed = this.speed.type[this.stateful.get 'flowSpeed']
     this.setFlowSpeed(this.speed.array[currentSpeed - 1])
 
   setDenominator : (denomi) ->
@@ -81,17 +82,17 @@ progressbarModel =
   _setProgress : (type, value) ->
     o = {}
     o[type] = value
-    this.changeState(o)
-    this.changeState(
-      progress : this.getProgress()
-      canRenderRatio : yes
-    )
+    this.stateful.set o
+    this.stateful.set
+      progress: this.computeProgress()
+      canRenderRatio: yes
 
-  getProgress : (process) ->
-    res = this._state.numerator / this._state.denominator
+  computeProgress : (process) ->
+    res = this.stateful.get('numerator') / this.stateful.get('denominator')
     res = Math[this.processType[process]](res) if this.processType.hasOwnProperty(process)
     res
 
-makeStateful(progressbarModel)
+makePublisher progressbarModel
+makeStateful progressbarModel, initialState
 
 module.exports = progressbarModel

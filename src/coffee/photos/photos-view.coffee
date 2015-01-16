@@ -10,16 +10,12 @@ module.exports =
   appendPhotos : (imgArr) ->
     return unless imgArr?
     return if imgArr.length is 0
-
     frag = document.createDocumentFragment()
     sent = imgArr.sent
-
     for v, i in imgArr
       this.appended[sent[i]] = yes
       frag.appendChild(v)
-
     this.el.photosView.appendChild(frag)
-
 
   clear : ->
     view = this.el.photosView

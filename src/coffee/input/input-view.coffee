@@ -3,6 +3,11 @@ makeStateful= require '../util/stateful'
 
 window.dom = document.querySelector '#input-window'
 
+initialState =
+  searchText: ''
+  perPage   : ''
+  maxReq    : ''
+
 window.inputView =
   elem :
     searchText   : dom.querySelector '#search-text'
@@ -11,12 +16,7 @@ window.inputView =
     searchButton : dom.querySelector '#search-button'
     canselButton : dom.querySelector '#cansel-button'
 
-  _state :
-    searchText   : ''
-    perPage      : ''
-    maxReq       : ''
-
-  getOptions : ->
+  getOptions : -> ## need?
     options =
       text     : this.elem.searchText.value
       per_page : this.elem.perPage.value
@@ -24,7 +24,7 @@ window.inputView =
       delete options[k] if options[k] is ''
     options
 
-  keyupStream: Rx.Observable.fromEvent dom, 'keyup'
+  keyupStream: Rx.Observable.fromEvent dom, 'keyup' ## Change to use change event.
     .map (e) -> e.target
     .filter (elem) ->
       elem.nodeName == 'INPUT'
@@ -35,9 +35,8 @@ window.inputView =
     maxReq = this.elem.maxReq.value
     maxReq ? false
 
-makeStateful inputView
 
-toCamelCase = (s) ->
+toCamelCase = (s) -> ## don't need when using change event ---->>
   s.replace(
     /(\w+)-(\w+)/,
     (m, c1, c2) ->
@@ -47,15 +46,15 @@ inputView.keyupStream.subscribe(
   (e) ->
     data = {}
     data[toCamelCase e.id] = e.value
-    inputView.changeState data,
-  (e) ->
-    console.log 'keyup subscribe error', e,
-  ->
-    console.log 'keyup subscribe on conplete')
+    inputView.stateful.set data
+  (e) -> console.log 'keyup subscribe error', e
+  -> console.log 'keyup subscribe on conplete') ## <<-------don't need when using change event
 
-inputView.changeState
-  searchText : inputView.elem.searchText.value
-  perPage : inputView.elem.perPage.value
-  maxReq : inputView.elem.maxReq.value
+
+makeStateful inputView, initialState
+inputView.stateful.set
+  searchText: inputView.elem.searchText.value
+  perPage   : inputView.elem.perPage.value
+  maxReq    : inputView.elem.maxReq.value
 
 module.exports = inputView

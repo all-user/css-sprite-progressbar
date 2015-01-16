@@ -1,49 +1,46 @@
+makePublisher = require '../util/publisher'
 makeStateful = require '../util/stateful'
 
-photosModel =
-  maxConcurrentRequest : 0
-  allRequestSize       : 0
-  loadedSize           : 0
-  photosURLArr         : []
-  unloadedURLArr       : []
-  photosArr            : []
+initialState =
+  validated: no
+  completed: no
 
-  _state :
-    validated : no
-    completed : no
+photosModel =
+  maxConcurrentRequest: 0
+  allRequestSize      : 0
+  loadedSize          : 0
+  photosURLArr        : []
+  unloadedURLArr      : []
+  photosArr           : []
 
   clear : ->
-    this.changeState(
-      validated : no
-      completed : no
-    )
-    this.setProperties(
-      maxConcurrentRequest : 0
-      allRequestSize       : 0
-      loadedSize           : 0
-      photosURLArr         : []
-      unloadedURLArr       : []
-      photosArr            : []
-    )
+    this.stateful.set
+      validated: no
+      completed: no
+    this.setProperties
+      maxConcurrentRequest: 0
+      allRequestSize      : 0
+      loadedSize          : 0
+      photosURLArr        : []
+      unloadedURLArr      : []
+      photosArr           : []
     this.fire('clear', null)
 
   clearUnloaded : ->
     this.setProperties
       unloadedURLArr : []
       allRequestSize : this.loadedSize
-
     this.fire('clearunloaded', this.loadedSize)
 
   incrementLoadedSize : ->
     this.loadedSize++
     this.fire('loadedincreased', photosModel.loadedSize)
-    this.changeState(completed : yes) if this.loadedSize >= this.allRequestSize
+    this.stateful.set 'completed', yes if this.loadedSize >= this.allRequestSize
 
   initPhotos : (urlArr) ->
-    this.setProperties(
-      photosURLArr : urlArr
-      allRequestSize : urlArr.length
-    )
+    this.setProperties
+      photosURLArr: urlArr
+      allRequestSize: urlArr.length
     this.validateProperties()
     this.loadPhotos()
 
@@ -64,8 +61,7 @@ photosModel =
   setProperties : (props) ->
     for own k, v of props
       this[k] = v if this.hasOwnProperty(k)
-
-    this.changeState(validated : no)
+    this.stateful.set 'validated', no
 
   validateProperties : ->
     try
@@ -73,7 +69,6 @@ photosModel =
       this.allRequestSize |= 0
       throw new Error('maxConcurrentRequest is Nan') if isNaN(this.maxConcurrentRequest)
       throw new Error('allRequestSize is Nan') if isNaN(this.allRequestSize)
-
       this.maxConcurrentRequest =
         if this.maxConcurrentRequest > this.allRequestSize
           this.allRequestSize
@@ -82,9 +77,8 @@ photosModel =
             this.maxConcurrentRequest
           else
             0
-
       this.unloadedURLArr = this.photosURLArr.slice()
-      this.changeState(validated : yes)
+      this.stateful.set 'validated', yes
     catch e
       console.log('Error in photosModel.validateProperties')
       console.log("message -> #{ e.message }")
@@ -98,7 +92,6 @@ photosModel =
   _getPhotosArr : (received, length) ->
     sent = []
     res = []
-
     if received?
       if typeof received is 'number'
         res.push(this.photosArr[received].cloneNode())
@@ -115,11 +108,10 @@ photosModel =
       for v, i in res
         res[i] = v.cloneNode() # photosArrの中のimgに対しての参照を消す
         sent[i] = i
-
     res.sent = sent
     res
 
-
-makeStateful(photosModel)
+makePublisher photosModel
+makeStateful photosModel, initialState
 
 module.exports = photosModel
