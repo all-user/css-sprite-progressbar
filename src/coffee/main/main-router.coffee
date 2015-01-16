@@ -22,14 +22,14 @@ document.addEventListener 'DOMContentLoaded', ->
       progressbarModel.setDenominator(urlArr.length)
 
     checkCanQuit : ->
-      bool = not flickrApiManager.getState('waiting') and photosModel.getState('completed')
-      progressbarModel.changeState(canQuit : bool)
+      bool = not flickrApiManager.stateful.get('waiting') and photosModel.stateful.get('completed')
+      progressbarModel.stateful.set(canQuit : bool)
 
     decideFlowSpeed : ->
       speed =
-        if progressbarView.getState('full')
+        if progressbarView.stateful.get('full')
           'fast'
-        else if flickrApiManager.getState('waiting')
+        else if flickrApiManager.stateful.get('waiting')
           'slow'
         else
           'middle'
@@ -57,10 +57,10 @@ document.addEventListener 'DOMContentLoaded', ->
 
     handleCanselClick : ->
       photosModel.clearUnloaded()
-      if flickrApiManager.getState 'waiting'
-        flickrApiManager.changeState 'waiting': no
+      if flickrApiManager.stateful.get 'waiting'
+        flickrApiManager.stateful.set 'waiting': no
         progressbarModel.fadeOut()
-      if progressbarModel.getState "failed"
+      if progressbarModel.stateful.get "failed"
         progressbarModel.fadeOut()
 
 
@@ -73,14 +73,14 @@ document.addEventListener 'DOMContentLoaded', ->
   flickrApiManager.on('urlready', 'setDenomiPhotosLength', mediator)
   photosModel.on('clearunloaded', 'setDenominator', progressbarModel)
   photosModel.on('loadedincreased', 'setNumerator', progressbarModel)
-  flickrApiManager.on('waitingchange', 'checkCanQuit', mediator)
-  photosModel.on('completedchange', 'checkCanQuit', mediator)
-  flickrApiManager.on('waitingchange', 'decideFlowSpeed', mediator)
+  flickrApiManager.stateful.on('waitingchange', 'checkCanQuit', mediator)
+  photosModel.stateful.on('completedchange', 'checkCanQuit', mediator)
+  flickrApiManager.stateful.on('waitingchange', 'decideFlowSpeed', mediator)
   photosModel.on('clear', 'clear', progressbarModel)
-  progressbarView.on('fullchange', 'decideFlowSpeed', mediator)
+  progressbarView.stateful.on('fullchange', 'decideFlowSpeed', mediator)
 
   # these are observed by renderer
-  progressbarModel.on('fadingchange', 'handleFading', mediator)
+  progressbarModel.stateful.on('fadingchange', 'handleFading', mediator)
   progressbarModel.on('run', 'draw', renderer)
   progressbarModel.on('stop', 'pause', renderer)
 
