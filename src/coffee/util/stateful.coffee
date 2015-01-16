@@ -1,7 +1,7 @@
 Rx = require 'rx'
 
 stateful =
-  _state : {}
+  _state: null
 
   stream: null
 
@@ -16,7 +16,12 @@ stateful =
       throw new Error 'type error at arguments'
 
   get: (prop) ->
-    this._state[prop]
+    if prop?
+      this._state[prop]
+    else
+      o = {}
+      o[prop] = value for prop, value of this._state
+      o
 
   setOnlyUndefinedProp: (statusObj) ->
     this._changeState(statusObj, yes)
