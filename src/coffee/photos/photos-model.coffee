@@ -34,7 +34,7 @@ photosModel =
 
   incrementLoadedSize : ->
     this.loadedSize++
-    this.fire('loadedincreased', photosModel.loadedSize)
+    this.fire('loadedincreased', this.loadedSize)
     this.stateful.set 'completed', yes if this.loadedSize >= this.allRequestSize
 
   initPhotos : (urlArr) ->
