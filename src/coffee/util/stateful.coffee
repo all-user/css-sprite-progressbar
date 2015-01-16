@@ -1,5 +1,4 @@
 Rx = require 'rx'
-makePublisher = require './publisher'
 
 stateful =
   _state : {}
@@ -41,6 +40,5 @@ makeStateful = (o, initState) ->
   for own i, v of stateful
     o.stateful[i] = v if typeof v is 'function'
   o.stateful.stream = new Rx.Subject()
-  makePublisher o.stateful
 
 module.exports = makeStateful

@@ -1,25 +1,28 @@
 Rx = require 'rx'
 makeStateful= require '../util/stateful'
 
-window.dom = document.querySelector '#input-window'
+dom = document.querySelector '#input-window'
+elem =
+  searchText   : dom.querySelector '#search-text'
+  perPage      : dom.querySelector '#per-page'
+  maxReq       : dom.querySelector '#max-req'
+  searchButton : dom.querySelector '#search-button'
+  canselButton : dom.querySelector '#cansel-button'
 
 initialState =
   searchText: ''
   perPage   : ''
   maxReq    : ''
 
-window.inputView =
-  elem :
-    searchText   : dom.querySelector '#search-text'
-    perPage      : dom.querySelector '#per-page'
-    maxReq       : dom.querySelector '#max-req'
-    searchButton : dom.querySelector '#search-button'
-    canselButton : dom.querySelector '#cansel-button'
 
-  keyupStream: Rx.Observable.fromEvent dom, 'keyup' ## Change to use change event.
+inputView =
+
+  elem: elem
+
+  changeStream: Rx.Observable.fromEvent(
+    dom.querySelectorAll 'input'
+    'change')
     .map (e) -> e.target
-    .filter (elem) ->
-      elem.nodeName == 'INPUT'
 
   clickStream: Rx.Observable.fromEvent dom, 'click'
 
@@ -28,19 +31,19 @@ window.inputView =
     maxReq ? false
 
 
-toCamelCase = (s) -> ## don't need when using change event ---->>
+toCamelCase = (s)
   s.replace(
     /(\w+)-(\w+)/,
     (m, c1, c2) ->
       c1 + c2[0].toUpperCase() + c2.substr 1)
 
-inputView.keyupStream.subscribe(
+inputView.changeStream.subscribe(
   (e) ->
     data = {}
     data[toCamelCase e.id] = e.value
     inputView.stateful.set data
-  (e) -> console.log 'keyup subscribe error', e
-  -> console.log 'keyup subscribe on conplete') ## <<-------don't need when using change event
+  (e) -> console.log 'change subscribe error', e
+  -> console.log 'change subscribe on complete')
 
 
 makeStateful inputView, initialState
