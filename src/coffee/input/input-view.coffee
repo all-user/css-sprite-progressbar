@@ -16,14 +16,6 @@ window.inputView =
     searchButton : dom.querySelector '#search-button'
     canselButton : dom.querySelector '#cansel-button'
 
-  getOptions : -> ## need?
-    options =
-      text     : this.elem.searchText.value
-      per_page : this.elem.perPage.value
-    for own k of options
-      delete options[k] if options[k] is ''
-    options
-
   keyupStream: Rx.Observable.fromEvent dom, 'keyup' ## Change to use change event.
     .map (e) -> e.target
     .filter (elem) ->
