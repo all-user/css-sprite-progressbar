@@ -1,4 +1,3 @@
-makePublisher = require '../util/stateful'
 makeStateful = require '../util/stateful'
 timeInfo = require '../util/timeInfo'
 
@@ -44,28 +43,18 @@ renderer =
       this.timerID = setInterval( =>
         info = coeffTimer.getInfo()
         for v, i in updaters
-          try
-            v(info.coefficient)
-          catch e
-            try
-              new Error("Error in draw : e -> #{ e }")
-            catch
-              console.log("message -> #{ e.message }")
-              console.log("stack -> #{ e.stack }")
-              console.log("fileName -> #{ e.fileName || e.sourceURL }")
-              console.log("line -> #{ e.line || e.lineNumber }")
+          v(info.coefficient)
         if this.stateful.get 'deleted'
           i = 0
           until i is updaters.length
-            if updaters[i] is null
-              updaters.splice(i, 1)
-            else
+            if updaters[i]?
               i++
+            else
+              updaters.splice i, 1
           this.stateful.set 'deleted': no
       , this.framerate)
 
 renderer.makeDraw()
-makePublisher renderer
 makeStateful renderer, initialState
 
 module.exports = renderer

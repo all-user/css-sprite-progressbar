@@ -1,4 +1,5 @@
 publisher =
+  stream: null
 
   _subscribers :
     any : []
@@ -42,5 +43,4 @@ publisher =
 module.exports = (o) ->
   for own k, v of publisher
     o[k] = v if typeof v is 'function'
-
   o._subscribers = any : []

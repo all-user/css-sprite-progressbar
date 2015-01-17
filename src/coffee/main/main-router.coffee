@@ -41,48 +41,79 @@ document.addEventListener 'DOMContentLoaded', ->
       switch action
         when 'stop'
           renderer.deleteUpdater(this.store.fadingUpdater)
-        else
+        when 'in', 'out'
           this.store.fadingUpdater = progressbarView.fadingUpdate
           renderer.addUpdater(this.store.fadingUpdater)
+        else
+          console.error 'switch value exception error', action
 
 
   # these are observed by photosModel
-  flickrApiManager.on('urlready', 'initPhotos', photosModel)
+  flickrUrlReady = flickrApiManager.eventStream
+    .filter (e) -> e.type is 'urlready'
+
+  flickrUrlReady.subscribe(
+    (e) -> photosModel.initPhotos e.data
+    (e) -> console.log 'flickrApiManager on urlready Error: ', e
+    -> console.log 'flickrApiManager on urlready complete')
 
   # these are observed by progressbarModel
-  flickrApiManager.on "apirequestfailed", "failed", progressbarModel
-  flickrApiManager.on('urlready', 'setDenomiPhotosLength', mediator)
-  photosModel.on('clearunloaded', 'setDenominator', progressbarModel)
-  photosModel.on('loadedincreased', 'setNumerator', progressbarModel)
+  flickrUrlReady.subscribe(
+    (e) -> mediator.setDenomiPhotosLength e.data
+    (e) -> console.log 'flickrApiManager on urlready Error: ', e
+    -> console.log 'flickrApiManager on urlready complete')
 
-  flickrWaitingChangedStream = flickrApiManager.stateful.stream
+  flickrApiManager.eventStream
+    .filter (e) -> e.type is 'apirequestfailed'
+    .subscribe(
+      (e) -> progressbarModel.failed e.data
+      (e) -> console.log 'flickrApiManager on apirequestfailed Error: ', e
+      -> console.log 'flickrApiManager on apirequestfailed complete')
+
+  photosModel.eventStream
+    .filter (e) -> e.type is 'clearunloaded'
+    .subscribe(
+      (e) -> progressbarModel.setDenominator e.data
+      (e) -> console.log 'photosModel on clearunloaded Error: ', e
+      -> console.log 'photosModel on clearunloaded complete')
+
+  photosModel.eventStream
+    .filter (e) -> e.type is 'loadedincreased'
+    .subscribe(
+      (e) -> progressbarModel.setNumerator e.data
+      (e) -> console.log 'photosModel on loadedincreased Error: ', e
+      -> console.log 'photosModel on loadedincreased complete')
+
+  flickrWaiting = flickrApiManager.stateful.stream
     .distinctUntilChanged (state) -> state.waiting
 
-  flickrWaitingChangedStream.subscribe(
-    mediator.checkCanQuit
-    (e) -> console.log 'flickrApiManager on waiting changed Error: ', e
-    -> console.log 'flickrApiManager on waiting changed complete')
-
-  flickrWaitingChangedStream.subscribe(
-    mediator.decideFlowSpeed
-    (e) -> console.log 'flickrApiManager on waiting changed Error: ', e
-    -> console.log 'flickrApiManager on waiting changed complete')
-
-  photosModel.stateful.stream
+  photosModelCompleted = photosModel.stateful.stream
     .distinctUntilChanged (state) -> state.completed
-    .subscribe(
-      mediator.checkCanQuit
-      (e) -> console.log 'flickrApiManager on completed changed Error: ', e
-      -> console.log 'flickrApiManager on completed changed complete')
 
-  photosModel.on('clear', 'clear', progressbarModel)
-
-  progressbarView.stateful.stream
+  progressbarViewFull = progressbarView.stateful.stream
     .distinctUntilChanged (state) -> state.full
+
+  flickrWaiting
+    .merge progressbarViewFull
     .subscribe(
       mediator.decideFlowSpeed
-      (e) -> console.log 'progressbarView on full changed Error: ', e
-      -> console.log 'progressbarView on full changed complete')
+      (e) -> console.log 'flickrApiManager on waiting changed Error: ', e
+      -> console.log 'flickrApiManager on waiting changed complete')
+
+  flickrWaiting
+    .merge photosModelCompleted
+    .subscribe(
+      mediator.checkCanQuit
+      (e) -> console.log 'flickrWaiting and photosModelCompleted changed Error: ', e
+      -> console.log 'flickrWaiting and photosModelCompleted changed complete')
+
+  photosModel.eventStream
+    .filter (e) -> e.type is 'clear'
+    .subscribe(
+      (e) -> progressbarModel.clear e.data
+      (e) -> console.log 'photosModel on clear changed Error: ', e
+      -> console.log 'photosModel on clear changed complete')
+
 
   # these are observed by renderer
   progressbarModel.stateful.stream
@@ -92,8 +123,19 @@ document.addEventListener 'DOMContentLoaded', ->
       (e) -> console.log 'progressbarModel on fading changed Error: ', e
       -> console.log 'progressbarModel on fading changed complete')
 
-  progressbarModel.on('run', 'draw', renderer)
-  progressbarModel.on('stop', 'pause', renderer)
+  progressbarModel.eventStream
+    .filter (e) -> e.type is 'run'
+    .subscribe(
+      (e) -> renderer.draw e.data
+      (e) -> console.log 'progressbarModel on run Error: ', e
+      -> console.log 'progressbarModel on run complete')
+
+  progressbarModel.eventStream
+    .filter (e) -> e.type is 'stop'
+    .subscribe(
+      (e) -> renderer.pause e.data
+      (e) -> console.log 'progressbarModel on stop Error: ', e
+      -> console.log 'progressbarModel on stop complete')
 
   # inputView is observed by mediator
   inputView.clickStream

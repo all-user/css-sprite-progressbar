@@ -1,4 +1,4 @@
-makePublisher = require '../util/publisher'
+Rx = require 'rx'
 
 objfield = document.createElement('div')
 objfield.style.width = '0px'
@@ -8,6 +8,8 @@ objfield.id = 'objfield'
 document.body.appendChild(objfield)
 
 preloader =
+  eventStream: new Rx.Subject()
+
   preload : (urlArr) ->
     fragment = document.createDocumentFragment()
     body = document.body
@@ -26,8 +28,8 @@ preloader =
     =>
       img = document.createElement('img')
       img.src = url
-      this.fire('loaded', img)
-
-makePublisher(preloader)
+      this.eventStream.onNext
+        'type': 'loaded'
+        'data': img
 
 module.exports = preloader

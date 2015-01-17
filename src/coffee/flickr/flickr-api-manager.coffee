@@ -1,12 +1,18 @@
-makePublisher = require '../util/publisher'
+Rx = require 'rx'
 makeStateful = require '../util/stateful'
 
 window.jsonFlickrApi = (json) ->
-  jsonFlickrApi.fire('apiresponse', json)
+  jsonFlickrApi.eventStream.onNext
+    'type': 'apiresponse'
+    'data': json
+jsonFlickrApi.eventStream = new Rx.Subject()
 
 initialState = 'waiting': no
 
+
 flickrApiManager =
+  eventStream: new Rx.Subject()
+
   apiOptions :
     apiKey : 'a3d606b00e317c733132293e31e95b2e'
     format : 'json'
@@ -47,12 +53,16 @@ flickrApiManager =
     newScript.src = this.genURI(this.apiOptions)
     newScript.onerror = (e) =>
       this.stateful.set 'waiting', no
-      this.fire "apirequestfailed", e
+      this.eventStream.onNext
+        'type': 'apirequestfailed'
+        'data': e
     if oldScript?
       document.body.replaceChild(newScript, oldScript)
     else
       document.body.appendChild(newScript)
-    this.fire('sendrequest', null)
+    this.eventStream.onNext
+      'type': 'sendrequest'
+      'data': null
 
   genURI : (options) ->
     uri = "api_key=#{options.apiKey}"
@@ -70,13 +80,20 @@ flickrApiManager =
   handleAPIResponse : (json) ->
     if this.stateful.get 'waiting'
       this.stateful.set 'waiting', no
-      this.fire('apiresponse', json)
-      this.fire('urlready', this.genPhotosURLArr(json))
+      this.eventStream.onNext
+        'type': 'apiresponse'
+        'data': json
+      this.eventStream.onNext
+        'type': 'urlready'
+        'data': this.genPhotosURLArr json
 
 
-makePublisher jsonFlickrApi
-makePublisher flickrApiManager
 makeStateful flickrApiManager, initialState
-jsonFlickrApi.on 'apiresponse', 'handleAPIResponse', flickrApiManager
+jsonFlickrApi.eventStream
+  .filter (e) -> e.type is 'apiresponse'
+  .subscribe(
+    (e) -> flickrApiManager.handleAPIResponse e.data
+    (e) -> console.log 'jsonFlickrApi on apiresponse Error: ', e
+    -> console.log 'jsonFlickrApi on apiresponse complete')
 
 module.exports = flickrApiManager

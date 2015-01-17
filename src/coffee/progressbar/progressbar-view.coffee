@@ -1,5 +1,4 @@
 Rx = require 'rx'
-makePublisher = require '../util/publisher'
 makeStateful = require '../util/stateful'
 DHTMLSprite = require '../util/DHTMLSprite'
 
@@ -14,6 +13,8 @@ progressbarView =
     arrowBox : document.getElementById('arrow-box')
     progress : document.getElementById('progress-bar')
     failedMsg : document.getElementById('failed-msg')
+
+  eventStream: new Rx.Subject()
 
   speed :
     stop : 0
@@ -112,7 +113,9 @@ progressbarView =
       progressbar.countTime = 0
       progressbar.recentWidth = model.progress * 100
       progressbar.passingWidth = +progressbarStyle.width.replace('%', '')
-      this.fire('ratiorendered', null)
+      this.eventStream.onNext
+        'type': 'ratiorendered'
+        'data': null
 
     _throttle =
       if settings.resolutionFPS == null
@@ -183,7 +186,9 @@ progressbarView =
         if display.countTime >= duration
           display.opacity = targetOpacity
           this._displayChange('none') if model.fading is 'out'
-          this.fire('fadeend')
+          this.eventStream.onNext
+            'type': 'fadeend'
+            'data': null
           this.initDisplay()
           return
         display.countTime += tCoeff
@@ -194,18 +199,20 @@ progressbarView =
     this.makeFadingUpdate()
 
   showFailedMsg : ->
-    this.el.failedMsg.style.display = "block"
+    this.el.failedMsg.style.display = 'block'
 
   hideFailedMsg : ->
-    this.el.failedMsg.style.display = "none"
+    this.el.failedMsg.style.display = 'none'
 
   _displayChange : (prop) ->
     this.el.gaugeBox.style.display =
     this.el.background.style.display = prop
-    this.fire('hide', null) if prop is "none"
+    if prop is 'none'
+      this.eventStream.onNext
+        'type': 'hide'
+        'data': null
 
 
-makePublisher progressbarView
 makeStateful progressbarView, initialState
 
 module.exports = progressbarView

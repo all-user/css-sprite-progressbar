@@ -1,4 +1,4 @@
-makePublisher = require '../util/publisher'
+Rx = require 'rx'
 makeStateful = require '../util/stateful'
 
 initialState =
@@ -13,6 +13,8 @@ photosModel =
   unloadedURLArr      : []
   photosArr           : []
 
+  eventStream: new Rx.Subject()
+
   clear : ->
     this.stateful.set
       validated: no
@@ -24,17 +26,23 @@ photosModel =
       photosURLArr        : []
       unloadedURLArr      : []
       photosArr           : []
-    this.fire('clear', null)
+    this.eventStream.onNext
+      'type': 'clear'
+      'data': null
 
   clearUnloaded : ->
     this.setProperties
       unloadedURLArr : []
       allRequestSize : this.loadedSize
-    this.fire('clearunloaded', this.loadedSize)
+    this.eventStream.onNext
+      'type': 'clearunloaded'
+      'data': this.loadedSize
 
   incrementLoadedSize : ->
     this.loadedSize++
-    this.fire('loadedincreased', this.loadedSize)
+    this.eventStream.onNext
+      'type': 'loadedincreased'
+      'data': this.loadedSize
     this.stateful.set 'completed', yes if this.loadedSize >= this.allRequestSize
 
   initPhotos : (urlArr) ->
@@ -52,7 +60,9 @@ photosModel =
 
   _load : (size) ->
     return if this.unloadedURLArr.length is 0
-    this.fire('delegateloading', this.unloadedURLArr.splice(0, size))
+    this.eventStream.onNext
+      'type': 'delegateloading'
+      'data': this.unloadedURLArr.splice(0, size)
 
   addPhoto : (img) ->
     this.photosArr.push(img)
@@ -111,7 +121,6 @@ photosModel =
     res.sent = sent
     res
 
-makePublisher photosModel
 makeStateful photosModel, initialState
 
 module.exports = photosModel

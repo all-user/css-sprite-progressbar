@@ -3,4 +3,4 @@ progressbarView = require '../progressbar/progressbar-view'
 
 progressbarView.setGlobalFPS renderer.targetFPS
 
-renderer.addUpdater(progressbarView.makeProgressbarUpdate())
+renderer.addUpdater progressbarView.makeProgressbarUpdate()

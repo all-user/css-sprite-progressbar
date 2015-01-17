@@ -1,6 +1,5 @@
 progressbarModel = require './progressbar-model'
 progressbarView = require './progressbar-view'
-renderer = require './../renderer/renderer'
 
 mediator =
   handleRendered : ->
@@ -14,8 +13,8 @@ mediator =
     progressbarModel.resque()
     progressbarModel.stop()
 
-  handleFailedChange: ->
-    if progressbarModel.stateful.get 'failed'
+  handleFailedChange: (failed) ->
+    if failed
       progressbarView.el.arrowBox.style.display =
       progressbarView.el.progress.style.display = 'none'
       progressbarView.showFailedMsg()
@@ -25,8 +24,19 @@ mediator =
       progressbarView.hideFailedMsg()
 
 # these are observed by progressbarModel
-progressbarModel.on('run', 'fadeIn', progressbarModel)
-progressbarView.on('ratiorendered', 'handleRendered', mediator)
+progressbarModel.eventStream
+  .filter (e) -> e.type is 'run'
+  .subscribe(
+    (e) -> progressbarModel.fadeIn e.data
+    (e) -> console.log 'progressbarModel on run Error: ', e
+    -> console.log 'progressbarModel on run complete')
+
+progressbarView.eventStream
+  .filter (e) -> e.type is 'ratiorendered'
+  .subscribe(
+    (e) -> mediator.handleRendered e.data
+    (e) -> console.log 'progressbarView on ratiorendered Error: ', e
+    -> console.log 'progressbarView on ratiorendered complete')
 
 progressbarView.stateful.stream
   .distinctUntilChanged (state) -> state.full
@@ -35,8 +45,19 @@ progressbarView.stateful.stream
     (e) -> console.log 'progressbarView on full changed Error: ', e
     -> console.log 'progressbarView on full changed complete')
 
-progressbarView.on('fadeend', 'fadeStop', progressbarModel)
-progressbarView.on('hide', 'handleHide', mediator)
+progressbarView.eventStream
+  .filter (e) -> e.type is 'fadeend'
+  .subscribe(
+    (e) -> progressbarModel.fadeStop e.data
+    (e) -> console.log 'progressbarView on fadeend Error: ', e
+    -> console.log 'progressbarView on fadeend complete')
+
+progressbarView.eventStream
+  .filter (e) -> e.type is 'hide'
+  .subscribe(
+    (e) -> mediator.handleHide e.data
+    (e) -> console.log 'progressbarView on hide Error: ', e
+    -> console.log 'progressbarView on hide complete')
 
 # these are observed by progressbarView
 progressbarView.stateful.set 'model': progressbarModel.stateful._state
@@ -51,8 +72,13 @@ progressbarModel.stateful.stream
 progressbarModel.stateful.stream
   .distinctUntilChanged (state) -> state.failed
   .subscribe(
-    mediator.handleFailedChange
+    (state) -> mediator.handleFailedChange state.failed
     (e) -> console.log 'progressbarModel on failed changed Error: ', e
     -> console.log 'progressbarModel on failed changed complete')
 
-progressbarView.on('hide', 'initProgressbar', progressbarView)
+progressbarView.eventStream
+  .filter (e) -> e.type is 'hide'
+  .subscribe(
+    (e) -> progressbarView.initProgressbar e.data
+    (e) -> console.log 'progressbarView on hide Error: ', e
+    -> console.log 'progressbarView on hide complete')

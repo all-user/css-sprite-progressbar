@@ -1,4 +1,4 @@
-makePublisher = require '../util/publisher'
+Rx = require 'rx'
 makeStateful = require '../util/stateful'
 
 initialState =
@@ -14,6 +14,9 @@ initialState =
 
 
 progressbarModel =
+
+  eventStream: new Rx.Subject()
+
   speed :
     type :
       stop : 0
@@ -33,10 +36,14 @@ progressbarModel =
     round : 'round'
 
   run : ->
-    this.fire('run', this)
+    this.eventStream.onNext
+      'type': 'run'
+      'data': null
 
   stop : ->
-    this.fire('stop', this)
+    this.eventStream.onNext
+      'type': 'stop'
+      'data': null
 
   clear : ->
     this.stateful.set
@@ -45,7 +52,9 @@ progressbarModel =
       progress: 0
       canRenderRatio: yes
       canQuit: no
-    this.fire('clear', null)
+    this.eventStream.onNext
+      'type': 'clear'
+      'data': null
 
   fadeIn : ->
     this.stateful.set 'fading', 'in'
@@ -92,7 +101,6 @@ progressbarModel =
     res = Math[this.processType[process]](res) if this.processType.hasOwnProperty(process)
     res
 
-makePublisher progressbarModel
 makeStateful progressbarModel, initialState
 
 module.exports = progressbarModel
