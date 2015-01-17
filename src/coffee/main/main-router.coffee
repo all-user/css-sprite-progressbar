@@ -27,7 +27,7 @@ document.addEventListener 'DOMContentLoaded', ->
 
     decideFlowSpeed : ->
       speed =
-        if progressbarView.stateful.get('full') ## use to switch operator
+        if progressbarView.stateful.get('full')
           'fast'
         else if flickrApiManager.stateful.get('waiting')
           'slow'
