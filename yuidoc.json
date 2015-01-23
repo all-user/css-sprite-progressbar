@@ -1,0 +1,10 @@
+{
+    "name": "The Progressbar API",
+    "description": "The Progressbar API: a library for doing progressbar with CSS sprite",
+    "version": "0.1",
+    "url": "https://github.com/all-user/progressbar-with-css-sprite",
+    "options": {
+        "outdir": "./apidocs",
+        "paths": "./src/js"
+    }
+}
