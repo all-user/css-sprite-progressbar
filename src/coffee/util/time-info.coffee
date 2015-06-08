@@ -27,7 +27,7 @@ class TimeInfo
         averageFPS: 0
         averageCoefficient: 0
       }
-    newTime = Date.now()
+    newTime = paformanse.now()
     elapsed = newTime - @oldTime
     @oldTime = newTime
     FPS = 1000 / elapsed
