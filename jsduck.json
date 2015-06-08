@@ -1,0 +1,8 @@
+{
+  "--title"     : "CSS Sprite Progressbar",
+  "--categories": "categories.json",
+  "--footer"    : "footer!!!",
+  "--":[
+    "src/js"
+  ]
+}

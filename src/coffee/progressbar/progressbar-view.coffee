@@ -1,49 +1,135 @@
-Rx = require 'rx'
-makeStateful = require '../util/stateful'
-DHTMLSprite = require '../util/DHTMLSprite'
+Rx           = require 'rx'
+makeStateful = (require '../util/stateful').makeStateful
+SpriteTile   = require '../util/sprite-tile'
+renderer     = require '../renderer/renderer'
 
-initialState =
-  full : no
-  model : {}
+###*
+* HTMLの以下の部分と密結合しており、`ProgressbarModel`などのデータを元にプログレスバーを描画する
+*
+*     <div id='gauge-box'>
+*         <div id="failed-msg">Oh! request failed...</div>
+*         <div id='progress-bar'></div>
+*         <div id='arrow-box'>
+*         </div>
+*     </div>
+*
+* @class ProgressbarView
+* @uses Rx.Subject
+* @uses Stateful
+* @uses DHTMLSprite
+* @constructor
+* `ProgressbarView`のインスタンスを生成する
+* @param {Number} globalFPS
+* `Renderer`の様に画面の更新を実際に行う部分が達成しようとしているFPSを指定する<br>
+* スプライトの更新や、移動、プログレスバーの増減などのアニメーションは、この値を元に相対的に時間係数を算出して描画する
+###
+class ProgressbarView
 
-progressbarView =
-  el : ## change el to elem
-    gaugeBox : document.getElementById('gauge-box')
-    background : document.getElementById('background-window')
-    arrowBox : document.getElementById('arrow-box')
-    progress : document.getElementById('progress-bar')
-    failedMsg : document.getElementById('failed-msg')
+  ###*
+  * @property {Boolean} [needsUpdate=no]
+  * 進捗に未描画の更新がある場合に`true`になる
+  * @private
+  ###
+  needsUpdate = no
 
-  eventStream: new Rx.Subject()
+  ###*
+  * @property {Number} gFPS
+  * `Renderer`の様に画面の更新を実際に行う部分が達成しようとしているFPSを指定する<br>
+  * スプライトの更新や、移動、プログレスバーの増減などのアニメーションは、この値を元に相対的に時間係数を算出して描画する
+  * @private
+  ###
+  gFPS = null
 
-  speed :
-    stop : 0
-    slow : 1
-    middle : 4
-    fast : 8
+  constructor: (globalFPS) ->
+    gFPS = globalFPS
 
-  globalFPS: null
+    ###*
+    * @property {Rx.Subject} eventStream
+    * `ProgressbarView`で起きる全てのイベントが流れてくる`Rx.Subject`のインスタンス<br>
+    * `.subscribe(observer)`で購読できる<br>
+    * [RxJS Doc: Creating and subscribing to a simple sequence](https://github.com/Reactive-Extensions/RxJS/blob/master/doc/gettingstarted/creating.md#user-content-creating-and-subscribing-to-a-simple-sequence)
+    *
+    * Includes all the events of `ProgressbarView`<br>
+    * this is instance of `Rx.Subject`<br>
+    *
+    *     progressbarView = new ProgressbarView();
+    *
+    *     progressbarView.eventStream.subscribe(function(e){
+    *       console.log("event name: ", e.type);
+    *       console.log("event data: ", e.data);
+    *     });
+    *
+    * <h4>Event Format</h4>
+    *
+    *     {
+    *         type: "name of event",
+    *         data: "data from publisher"
+    *     }
+    *
+    * <h4>Events</h4>
+    * - **フェードイン・アウトの描画が終了した時**<br>
+    *   `type: {String} "fadeend"`<br>
+    *   `data: {null} null`
+    * - **プログレスバーが非表示になった時**<br>
+    *   `type: {String} "hide"`<br>
+    *   `data: {null} null`
+    ###
+    @eventStream = new Rx.Subject()
 
-  progressbar:
-    passingWidth: 0
-    recentWidth: 0
-    countTime: 0
-    settings:
-      durationTime: 1200
-      easing: 'easeOutExpo'
-      targetFPS:
-        tile: 20
-        slide: 30
-        ratio: 1.2
-      resolutionFPS: null
+    ###*
+    * @property {Object} progressbar
+    * プログレスバーのアニメーションに関するデータを保持するオブジェクト
+    * @property {Object} progressbar.renderedProgress
+    * 描画されたのプログレスバーの幅・割合・進捗度
+    * @property {Object} progressbar.progress
+    * プログレスバーがモデリングする実際の進捗度
+    * @property {Object} progressbar.settings
+    * @property {Object} progressbar.settings.targetFPS
+    * @property {Object} [progressbar.settings.targetFPS.tile=20]
+    * @property {Object} [progressbar.settings.targetFPS.slide=30]
+    * @property {Object} [progressbar.settings.targetFPS.ratio=1.2]
+    * @property {Number} [progressbar.settings.durationTime=1200]
+    * バーが伸びるアニメーションの間隔をミリ秒で指定
+    * @property {String} [progressbar.settings.easing="easeOutSine"]
+    * バーが伸びるアニメーションのイージングを指定
+    ###
+    @progressbar =
+      renderedProgress: 0
+      progress        : 0
+      countTime       : 0
+      settings:
+        durationTime: 1200
+        easing      : 'easeOutExpo'
+        targetFPS:
+          tile : 20
+          slide: 30
+          ratio: 1.2
+        resolutionFPS: null
+    @display =
+      opacity  : 0
+      countTime: 0
+      settings:
+        durationTime : 500
+        easing       : 'easeOutSine'
+        resolutionFPS: null
+    initialState =
+      full : no
+      model: {}
+    makeStateful this, initialState
 
-  display :
-    opacity : 0
-    countTime : 0
-    settings :
-      durationTime : 500
-      easing : 'easeOutSine'
-      resolutionFPS: null
+
+  elem:
+    gaugeBox  : document.getElementById 'gauge-box'
+    background: document.getElementById 'background-window'
+    arrowBox  : document.getElementById 'arrow-box'
+    progress  : document.getElementById 'progress-bar'
+    failedMsg : document.getElementById 'failed-msg'
+
+  speed:
+    stop  : 0
+    slow  : 1
+    middle: 4
+    fast  : 8
 
   easing :
     easeOutSine : (t, b, c, d) ->
@@ -53,166 +139,135 @@ progressbarView =
       if (t is d) then b+c else c * (-Math.pow(2, -10 * t/d) + 1) + b
 
   setGlobalFPS: (FPS) ->
-    this.globalFPS = FPS
+    gFPS = FPS
 
-  initProgressbar : ->
-    this.progressbar.countTime = 0
-    this.progressbar.passingWidth = 0
-    this.progressbar.recentWidth = 0
-    this.el.progress.style.width = '0%'
-    this.stateful.set 'full': no
+  initProgressbar: ->
+    @progressbar.countTime     = 0
+    @progressbar.renderedProgress  = 0
+    @progressbar.progress   = 0
+    @elem.progress.style.width = '0%'
+    @stateful.set 'full': no
 
-  initDisplay : ->
-    this.display.countTime = 0
+  initDisplay: ->
+    @display.countTime = 0
 
-  spriteTile : (options) ->
-    { x, y } = options
-    index = 0
-    sprite = DHTMLSprite(options)
-    sprite.draw(x, y)
-
-    sprite.update = (tCoeff) ->
-      index += tCoeff
-      index %= 28
-      sprite.changeImage index | 0
-
-    sprite
-
+  notifyUpdate: ->
+    needsUpdate = yes
 
   progressbarUpdate : ->
 
   makeProgressbarUpdate : ->
-    if this.globalFPS == null
-      throw new Error 'Must define globalFPS.'
-
-    model = this.stateful.get 'model'
-    progressbar = this.progressbar
-    settings = progressbar.settings
-    duration = settings.durationTime / (1000 / this.globalFPS)
-    easing = this.easing[settings.easing]
-    tiles = [0, 100, 200, 300, 400, 500].map (pos) =>
-      this.spriteTile
-        x : pos
-        y : 0
-        width : 100
-        height : 20
-        imagesWidth : 400
-        drawTarget : this.el.arrowBox
-        images: './images/arrow.png'
-
-    progressbarStyle = this.el.progress.style
-    arrowboxStyle = this.el.arrowBox.style
-
-    tileCoeff = settings.targetFPS.tile / this.globalFPS
-    slideCoeff = settings.targetFPS.slide / this.globalFPS
-    ratioCoeff = settings.targetFPS.ratio / this.globalFPS
-    updateCounter = 0
-    slideCounter = 0
-
+    throw new Error 'Must define globalFPS.' unless gFPS?
+    model    = @stateful.get 'model'
+    settings = @progressbar.settings
+    duration = settings.durationTime / (1000 / gFPS)
+    easing   = @easing[settings.easing]
+    tiles    = [0, 100, 200, 300, 400, 500].map (pos) =>
+      new SpriteTile
+        x          : pos
+        y          : 0
+        width      : 100
+        height     : 20
+        imagesWidth: 400
+        drawTarget : @elem.arrowBox
+        images     : './images/arrow.png'
+        indexLength: 28
+    progressbarStyle = @elem.progress.style
+    arrowboxStyle    = @elem.arrowBox.style
+    tileCoeff  = settings.targetFPS.tile  / gFPS
+    slideCoeff = settings.targetFPS.slide / gFPS
+    ratioCoeff = settings.targetFPS.ratio / gFPS
+    ratioUpdateTimer = 0
+    slideCounter  = 0
     _renderRatio = =>
-      progressbar.countTime = 0
-      progressbar.recentWidth = model.progress * 100
-      progressbar.passingWidth = +progressbarStyle.width.replace('%', '')
-      this.eventStream.onNext
-        'type': 'ratiorendered'
-        'data': null
-
-    _throttle =
+      @progressbar.countTime    = 0
+      @progressbar.progress  = model.progress * 100
+      @progressbar.renderedProgress = +progressbarStyle.width.replace('%', '')
+      needsUpdate = no
+    _throttleFrame =
       if settings.resolutionFPS == null
         (countTime) -> countTime
       else
-        resolutionFramerate = this.globalFPS / settings.resolutionFPS
+        resolutionFramerate = gFPS / settings.resolutionFPS
         (countTime) -> countTime - (countTime % resolutionFramerate)
-
-    this.progressbarUpdate = (tCoeff) =>
-      # debug code start ->
-      # <- debug code end
-
+    @progressbarUpdate = (tCoeff) =>
       _tileCoeff = tCoeff * tileCoeff
       for tile in tiles
         tile.update(_tileCoeff)
-
-      updateCounter += tCoeff * ratioCoeff
-      if updateCounter > 1
-        _renderRatio() if model.canRenderRatio
+      ratioUpdateTimer += tCoeff * ratioCoeff
+      if ratioUpdateTimer > 1
+        _renderRatio() if needsUpdate
         if model.canQuit and (+progressbarStyle.width.replace '%', '') >= 99.9
-          this.stateful.set 'full': yes
-
-      if progressbar.countTime <= duration
-        progressbar.countTime += tCoeff
+          @stateful.set 'full': yes
+      if @progressbar.countTime <= duration
+        @progressbar.countTime += tCoeff
         progressbarStyle.width = easing(
-          _throttle progressbar.countTime
-          progressbar.passingWidth
-          progressbar.recentWidth - progressbar.passingWidth
+          _throttleFrame @progressbar.countTime
+          @progressbar.renderedProgress
+          @progressbar.progress - @progressbar.renderedProgress
           duration
         ) + '%'
-
       slideCounter += tCoeff * slideCoeff
-      arrowboxStyle.left = "#{ slideCounter * this.speed[model.flowSpeed] % 100 - 100 }px"
-
-      updateCounter %= 1
+      arrowboxStyle.left = "#{ slideCounter * @speed[model.flowSpeed] % 100 - 100 }px"
+      ratioUpdateTimer %= 1
 
   fadingUpdate : ->
 
   makeFadingUpdate : ->
-    model = this.stateful.get 'model'
-    display = this.display
-    settings = display.settings
-    duration = settings.durationTime / (1000 / this.globalFPS)
-    easing = this.easing[settings.easing]
-    gaugeboxStyle = this.el.gaugeBox.style
-    backgroundStyle = this.el.background.style
-    _throttle =
+    model    = @stateful.get 'model'
+    settings = @display.settings
+    duration = settings.durationTime / (1000 / gFPS)
+    easing   = @easing[settings.easing]
+    gaugeboxStyle   = @elem.gaugeBox.style
+    backgroundStyle = @elem.background.style
+    _throttleFrame =
       if settings.resolutionFPS == null
         (countTime) -> countTime
       else
-        resolutionFramerate = this.globalFPS / settings.resolutionFPS
+        resolutionFramerate = gFPS / settings.resolutionFPS
         (countTime) -> countTime - (countTime % resolutionFramerate)
-    this.makeFadingUpdate = =>
+    @makeFadingUpdate = =>
       type = model.fading
-      currentOpacity = display.opacity
+      currentOpacity = @display.opacity
       switch type
         when 'stop' then return
-        when 'in' then targetOpacity = 1
-        when 'out' then targetOpacity = 0
-      this.fadingUpdate = (tCoeff) =>
-        display.opacity = easing(
-          _throttle display.countTime
+        when 'in'   then targetOpacity = 1
+        when 'out'  then targetOpacity = 0
+      @fadingUpdate = (tCoeff) =>
+        @display.opacity = easing(
+          _throttleFrame @display.countTime
           currentOpacity
           targetOpacity - currentOpacity
           duration)
-        gaugeboxStyle.opacity = display.opacity * 0.5
-        backgroundStyle.opacity = display.opacity * 0.8
-        if display.countTime >= duration
-          display.opacity = targetOpacity
-          this._displayChange('none') if model.fading is 'out'
-          this.eventStream.onNext
+        gaugeboxStyle.opacity   = @display.opacity * 0.5
+        backgroundStyle.opacity = @display.opacity * 0.8
+        if @display.countTime >= duration
+          @display.opacity = targetOpacity
+          @_displayChange('none') if model.fading is 'out'
+          @eventStream.onNext
             'type': 'fadeend'
             'data': null
-          this.initDisplay()
+          @initDisplay()
           return
-        display.countTime += tCoeff
-    this.makeFadingUpdate()
+        @display.countTime += tCoeff
+    @makeFadingUpdate()
 
   fadeInOut : (statusObj) ->
-    this._displayChange('block') if statusObj.fading is 'in'
-    this.makeFadingUpdate()
+    @_displayChange('block') if statusObj.fading is 'in'
+    @makeFadingUpdate()
 
   showFailedMsg : ->
-    this.el.failedMsg.style.display = 'block'
+    @elem.failedMsg.style.display = 'block'
 
   hideFailedMsg : ->
-    this.el.failedMsg.style.display = 'none'
+    @elem.failedMsg.style.display = 'none'
 
   _displayChange : (prop) ->
-    this.el.gaugeBox.style.display =
-    this.el.background.style.display = prop
+    @elem.gaugeBox.style.display   =
+    @elem.background.style.display = prop
     if prop is 'none'
-      this.eventStream.onNext
+      @eventStream.onNext
         'type': 'hide'
         'data': null
 
-
-makeStateful progressbarView, initialState
-
-module.exports = progressbarView
+module.exports = new ProgressbarView renderer.targetFPS

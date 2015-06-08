@@ -1,60 +1,82 @@
-makeStateful = require '../util/stateful'
-timeInfo = require '../util/timeInfo'
+makeStateful = (require '../util/stateful').makeStateful
+TimeInfo = require '../util/time-info'
 
-initialState =
-  running : no
-  deleted : no
+###*
+* @class Renderer
+* @uses Stateful
+* @uses TimeInfo
+* @constructor
+* @param {Number} [targetFPS=60]
+###
+class Renderer
+  constructor: (targetFPS) ->
+    @updaters = []
+    @targetFPS = targetFPS ? 60
+    @framerate = 1000 / @targetFPS | 0
+    @timerID = null
+    initialState =
+      running: no
+      deleted: no
+    makeStateful this, initialState
 
-renderer =
-  updaters : []
-  framerate : 16
-  targetFPS : 60
-  timerID : null
-
-  addUpdater : (updater) ->
+  ###*
+  * @method addUpdater
+  * @param {Function} updater
+  ###
+  addUpdater: (updater) ->
     if updater instanceof Array
-      this.updaters.concat(updater)
+      @updaters.concat(updater)
     else if typeof updater is 'function'
-      this.updaters.push(updater)
+      @updaters.push(updater)
 
-  deleteUpdater : (updater) ->
-    this._visitUpdaters('delete', updater)
+  ###*
+  * @method deleteUpdater
+  * @param {Function} updater
+  ###
+  deleteUpdater: (updater) ->
+    @_visitUpdaters('delete', updater)
 
+  ###*
+  * @method _visitUpdaters
+  * @param {String} action
+  * @param {Function} fn
+  * @private
+  ###
   _visitUpdaters : (action, fn) ->
-    updaters = this.updaters
     if action is 'delete'
-      for v, i in updaters
+      for v, i in @updaters
         if v is fn
-          updaters[i] = null
-          this.stateful.set 'deleted': yes
+          @updaters[i] = null
+          @stateful.set 'deleted': yes
 
+  ###*
+  * @method draw
+  ###
   draw : ->
+    return if @stateful.get 'running'
+    @coeffTimer ?= new TimeInfo @targetFPS
+    @stateful.set 'running': yes
+    @timerID = setInterval =>
+      info = @coeffTimer.getInfo()
+      for v, i in @updaters
+        v(info.coefficient)
+      if @stateful.get 'deleted'
+        i = 0
+        until i is @updaters.length
+          if @updaters[i]?
+            i++
+          else
+            @updaters.splice i, 1
+        @stateful.set 'deleted': no
+    , @framerate
 
+  ###*
+  * @method pause
+  ###
   pause : ->
-    clearInterval(this.timerID)
-    this.stateful.set 'running': no
+    clearInterval(@timerID)
+    @coeffTimer.pause()
+    @stateful.set 'running': no
 
-  makeDraw : ->
-    updaters = this.updaters
-    this.draw = =>
-      return if this.stateful.get 'running'
-      coeffTimer = timeInfo this.targetFPS
-      this.stateful.set 'running': yes
-      this.timerID = setInterval( =>
-        info = coeffTimer.getInfo()
-        for v, i in updaters
-          v(info.coefficient)
-        if this.stateful.get 'deleted'
-          i = 0
-          until i is updaters.length
-            if updaters[i]?
-              i++
-            else
-              updaters.splice i, 1
-          this.stateful.set 'deleted': no
-      , this.framerate)
 
-renderer.makeDraw()
-makeStateful renderer, initialState
-
-module.exports = renderer
+module.exports = new Renderer

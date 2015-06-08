@@ -1,0 +1,99 @@
+[
+  {
+    "name": "flickr",
+    "groups": [
+      {
+        "name": "API",
+        "classes": [
+          "FlickrAPIManager"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "input",
+    "groups": [
+      {
+        "name": "View",
+        "classes": [
+          "InputView"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "photos",
+    "groups": [
+      {
+        "name": "Model",
+        "classes": [
+          "PhotosModel"
+        ]
+      },
+      {
+        "name": "View",
+        "classes": [
+          "PhotosView"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "progressbar",
+    "groups": [
+      {
+        "name": "Model",
+        "classes": [
+          "ProgressbarModel"
+        ]
+      },
+      {
+        "name": "View",
+        "classes": [
+          "ProgressbarView"
+        ]
+      },
+      {
+        "name": "Util",
+        "classes": [
+          "Preloader"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "renderer",
+    "groups": [
+      {
+        "name": "Render",
+        "classes": [
+          "Renderer"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "util",
+    "groups": [
+      {
+        "name": "State",
+        "classes": [
+          "Stateful"
+        ]
+      },
+      {
+        "name": "Sprite",
+        "classes": [
+          "DHTMLSprite",
+          "SpriteTile"
+        ]
+      },
+      {
+        "name": "Framerate",
+        "classes": [
+          "TimeInfo"
+        ]
+      }
+    ]
+  }
+]

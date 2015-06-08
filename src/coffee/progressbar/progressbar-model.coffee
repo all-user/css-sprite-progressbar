@@ -1,106 +1,273 @@
 Rx = require 'rx'
-makeStateful = require '../util/stateful'
+makeStateful = (require '../util/stateful').makeStateful
 
-initialState =
-  hidden: yes
-  fading: 'stop'
-  failed: no
-  flowSpeed: 'slow'
-  denominator: 0
-  numerator: 0
-  progress: 0
-  canRenderRatio: no
-  canQuit: no
+###*
+* プログレスバーの状態を管理するクラス
+* @class ProgressbarModel
+* @uses Rx.Subject
+* @uses Stateful
+* @constructor
+* ProgressbarModelのインスタンスを生成する
+###
+class ProgressbarModel
+  constructor: ->
+    ###*
+    * @property {Rx.Subject} eventStream
+    * `ProgressbarModel`で起きる全てのイベントが流れてくる`Rx.Subject`のインスタンス<br>
+    * `.subscribe(observer)`で購読できる<br>
+    * [RxJS Doc: Creating and subscribing to a simple sequence](https://github.com/Reactive-Extensions/RxJS/blob/master/doc/gettingstarted/creating.md#user-content-creating-and-subscribing-to-a-simple-sequence)
+    *
+    * Includes all the events of `ProgressbarModel`<br>
+    * this is instance of `Rx.Subject`<br>
+    *
+    *     progressbarModel = new ProgressbarModel();
+    *
+    *     progressbarModel.eventStream.subscribe(function(e){
+    *       console.log("event name: ", e.type);
+    *       console.log("event data: ", e.data);
+    *     });
+    *
+    * <h4>Event Format</h4>
+    *
+    *     {
+    *         type: "name of event",
+    *         data: "data from publisher"
+    *     }
+    *
+    * <h4>Events</h4>
+    * - **プログレスバーのアニメーションがスタートした時**<br>
+    *   * `type: {String} "run"`
+    *   * `data: {null} null`
+    * - **プログレスバーのアニメーションが終了した時**<br>
+    *   * `type: {String} "stop"`
+    *   * `data: {null} null`
+    * - **プログレスバーの状態がクリアされた時**<br>
+    *   * `type: {String} "clear"`
+    *   * `data: {null} null`
+    *
+    ###
+    @eventStream = new Rx.Subject()
 
+    ###*
+    * 状態の変更を通知する為の機能をまとめたオブジェクト<br>
+    * 状態を変更、監視、取得するための方法は{@link Stateful}を参照<br>
+    * <h4>初期状態</h4>
+    *
+    *     {
+    *         'fading'        : 'stop',
+    *         'flowSpeed'     : 'slow',
+    *         'denominator'   : 0,
+    *         'numerator'     : 0,
+    *         'progress'      : 0,
+    *         'failed'        : false,
+    *         'canQuit'       : false
+    *     }
+    *
+    * <h4>各状態の意味</h4>
+    * - **`fading`**`: String`<br>
+    *   プログレスバーのフェードイン・アウトの状態を表す
+    *     - `'stop'`<br>
+    *       フェードイン・アウトしていない状態、何も変化していない状態
+    *     - `'in'`<br>
+    *       フェードインしている状態
+    *     - `'out'`<br>
+    *       フェードアウトしている状態
+    * - **`flowSpeed`**`: String`<br>
+    *   プログレスバーの横に流れるアニメーションのスピードを表す<br>
+    *   プログレスバーのアニメーション中の何らかの変化量を表すのに使う
+    *     - `'stop'`<br>
+    *       停止している、流れない
+    *     - `'slow'`<br>
+    *       遅い、ゆっくり流れる
+    *     - `'middle'`<br>
+    *       普通、中くらいの速さで流れる
+    *     - `'fast'`<br>
+    *       速い、すばやく流れる
+    * - **`denominator`**`: Number`<br>
+    *   プログレスバーの進捗を計算する上での分母<br>
+    *   進捗の、ゴール・目標値を指す数値
+    * - **`numerator`**`: Number`<br>
+    *   プログレスバーの進捗を計算する上での分子<br>
+    *   タスク全体の内、完了したものを指す数値
+    * - **`progress`**`: Number`<br>
+    *   プログレスバーの進捗の割合を`0`〜`1`の間の数値で表す<br>
+    *   `0`は全てのタスクが未完了、`1`は全てのタスクが完了したことを表す<br>
+    *   `denominator`、`numerator`の値から自動的に計算される
+    * - **`failed`**`: Boolean`<br>
+    *   何らかの理由でエラーが起きている時に`true`になる
+    * - **`canQuit`**`: Boolean`<br>
+    *   全てのタスクが完了した時など、終了できる状態になった時`true`になる<br>
+    *   `progress`が`1`になっていてもAPIのレスポンスを待っていて終了したくない場合などは`false`に設定する
+    *
+    * @member ProgressbarModel
+    * @property {Stateful} stateful
+    * @mixin Stateful
+    ###
+    initialState =
+      fading        : 'stop'
+      flowSpeed     : 'slow'
+      denominator   : 0
+      numerator     : 0
+      progress      : 0
+      failed        : no
+      canQuit       : no
+    makeStateful this, initialState
 
-progressbarModel =
+  ###*
+  * @property {String[]} speed
+  * `ProgressbarModel.stateful._state.speed`の取り得る値と、その順序を定義する配列<br>
+  * @static
+  * @private
+  ###
+  speed: [ 'stop', 'slow', 'middle', 'fast' ]
 
-  eventStream: new Rx.Subject()
-
-  speed :
-    type :
-      stop : 0
-      slow : 1
-      middle : 2
-      fast : 3
-    array : [
-      'stop'
-      'slow'
-      'middle'
-      'fast'
-    ]
-
-  processType :
-    ceil : 'ceil'
-    floor : 'floor'
-    round : 'round'
-
-  run : ->
-    this.eventStream.onNext
+  ###*
+  * @method run
+  * プログレスバーの描画を開始したことを通知する<br>
+  * 実際には`ProgressbarModel.eventStream`に`run`イベントを流すだけなので<br>
+  * プレゼンテーション側で`run`を購読する必要がある
+  ###
+  run: ->
+    @eventStream.onNext
       'type': 'run'
       'data': null
 
-  stop : ->
-    this.eventStream.onNext
+  ###*
+  * @method stop
+  * プログレスバーの描画を終了したことを通知する<br>
+  * 実際には`ProgressbarModel.eventStream`に`stop`イベントを流すだけなので<br>
+  * プレゼンテーション側で`stop`を購読する必要がある
+  ###
+  stop: ->
+    @eventStream.onNext
       'type': 'stop'
       'data': null
 
-  clear : ->
-    this.stateful.set
-      denominator: 0
-      numerator: 0
-      progress: 0
-      canRenderRatio: yes
-      canQuit: no
-    this.eventStream.onNext
+  ###*
+  * @method clear
+  * プログレスバーの進捗の情報を破棄する<br>
+  ###
+  clear: ->
+    @stateful.set
+      denominator   : 0
+      numerator     : 0
+      progress      : 0
+      canQuit       : no
+    @eventStream.onNext
       'type': 'clear'
       'data': null
 
-  fadeIn : ->
-    this.stateful.set 'fading', 'in'
+  ###*
+  * @method fadeIn
+  * プログレスバーをフェードイン・表示させる<br>
+  * 実際には`stateful`の`fading`を`'in'`にセットするだけなので<br>
+  * プレゼンテーション側で`fading`を購読する必要がある
+  ###
+  fadeIn: ->
+    @stateful.set 'fading', 'in'
 
-  fadeOut : ->
-    this.stateful.set 'fading', 'out'
+  ###*
+  * @method fadeOut
+  * プログレスバーをフェードアウト・非表示にする<br>
+  * 実際には`stateful`の`fading`を`'out'`にセットするだけなので<br>
+  * プレゼンテーション側で`fading`を購読する必要がある
+  ###
+  fadeOut: ->
+    @stateful.set 'fading', 'out'
 
-  fadeStop : ->
-    this.stateful.set 'fading', 'stop'
+  ###*
+  * @method fadeStop
+  * プログレスバーのフェードイン・アウトを終了する<br>
+  * 実際には`stateful`の`fading`を`'stop'`にセットするだけなので<br>
+  * プレゼンテーション側で`fading`を購読する必要がある
+  ###
+  fadeStop: ->
+    @stateful.set 'fading', 'stop'
 
-  failed : ->
-    this.stateful.set 'failed', yes
+  ###*
+  * @method failed
+  * エラーを表示させる<br>
+  * 実際には`stateful`の`failed`を`true`にセットするだけなので<br>
+  * プレゼンテーション側で`failed`を購読する必要がある
+  ###
+  failed: ->
+    @stateful.set 'failed', yes
 
-  resque : ->
-    this.stateful.set 'failed', no
+  ###*
+  * @method resque
+  * エラーから復帰させる<br>
+  * 実際には`stateful`の`failed`を`false`にセットするだけなので<br>
+  * プレゼンテーション側で`failed`を購読する必要がある
+  ###
+  resque: ->
+    @stateful.set 'failed', no
 
-  setFlowSpeed : (speed) ->
-    this.stateful.set 'flowSpeed', speed if this.speed.type.hasOwnProperty(speed)
+  ###*
+  * @method setFlowSpeed
+  * プログレスバーの横に流れるアニメーションのスピードを変更する<br>
+  * プログレスバーのアニメーション中の何らかの変化量を変更する
+  * @param {String} speed
+  * - `'stop'`<br>
+  *   停止している、流れない
+  * - `'slow'`<br>
+  *   遅い、ゆっくり流れる
+  * - `'middle'`<br>
+  *   普通、中くらいの速さで流れる
+  * - `'fast'`<br>
+  *   速い、すばやく流れる
+  ###
+  setFlowSpeed: (speed) ->
+    @stateful.set 'flowSpeed', speed unless @speed.indexOf(speed) == -1
 
-  flowMoreFaster : ->
-    currentSpeed = this.speed.type[this.stateful.get 'flowSpeed']
-    this.setFlowSpeed(this.speed.array[currentSpeed + 1])
+  ###*
+  * @method setDenominator
+  * プログレスバーの進捗を計算する上での分母をセットする<br>
+  * 進捗の、ゴール・目標値を指す数値をセットする
+  * @param {Number} denomi
+  * プログレスバーの進捗を計算する上での分母<br>
+  * 進捗の、ゴール・目標値を指す数値
+  ###
+  setDenominator: (denomi) ->
+    @_setProgress 'denominator', denomi
 
-  flowMoreSlower : ->
-    currentSpeed = this.speed.type[this.stateful.get 'flowSpeed']
-    this.setFlowSpeed(this.speed.array[currentSpeed - 1])
+  ###*
+  * @method
+  * プログレスバーの進捗を計算する上での分子をセットする<br>
+  * タスク全体の内、完了したものを指す数値をセットする
+  * @param {Number} numer
+  * プログレスバーの進捗を計算する上での分子<br>
+  * タスク全体の内、完了したものを指す数値
+  ###
+  setNumerator: (numer) ->
+    @_setProgress 'numerator', numer
 
-  setDenominator : (denomi) ->
-    this._setProgress('denominator', denomi)
-
-  setNumerator : (numer) ->
-    this._setProgress('numerator', numer)
-
-  _setProgress : (type, value) ->
+  ###*
+  * @method
+  * `denominator`と`numerator`へのセッタ
+  * @param {String} type
+  * `denominator`か`numerator`を指定する
+  * @param {Number} value
+  * セットする値
+  * @private
+  ###
+  _setProgress: (type, value) ->
     o = {}
     o[type] = value
-    this.stateful.set o
-    this.stateful.set
-      progress: this.computeProgress()
-      canRenderRatio: yes
+    @stateful.set o
+    @stateful.set
+      progress      : @computeProgress()
 
-  computeProgress : (process) ->
-    res = this.stateful.get('numerator') / this.stateful.get('denominator')
-    res = Math[this.processType[process]](res) if this.processType.hasOwnProperty(process)
-    res
+  ###*
+  * @method computeProgress
+  * `denominator`、`numerator`から`progress`を算出する<br>
+  * `denominator`、`numerator`が変更される時に自動的に呼び出される
+  * @private
+  * @return {Number}
+  * プログレスバーの進捗の割合を`0`〜`1`の間で表した値<br>
+  * `0`は全てのタスクが未完了、`1`は全てのタスクが完了したことを表す
+  ###
+  computeProgress: ->
+    @stateful.get('numerator') / @stateful.get('denominator')
 
-makeStateful progressbarModel, initialState
 
-module.exports = progressbarModel
+module.exports = new ProgressbarModel()

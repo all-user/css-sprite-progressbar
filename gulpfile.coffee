@@ -6,10 +6,11 @@ coffeelint = require 'gulp-coffeelint'
 coffee = require 'gulp-coffee'
 watchify = require 'watchify'
 merge = (require 'event-stream').merge
+shell = require 'gulp-shell'
 
 gulp.task 'browserify', ->
   browserify
-    entries : ['./src/coffee/main/main-router.coffee']
+    entries : ['./src/coffee/main/main-operation.coffee']
     extensions : ['.coffee']
   .bundle()
   .pipe source 'app.js'
@@ -18,7 +19,7 @@ gulp.task 'browserify', ->
 gulp.task 'watch', ->
   bundler =
     watchify
-      entries : ['./src/coffee/main/main-router.coffee']
+      entries : ['./src/coffee/main/main-operation.coffee']
       extensions : ['.coffee']
       verbose : on
   rebundle = ->
@@ -74,4 +75,7 @@ gulp.task 'build_test_case', ->
   merge tasks...
 
 
-gulp.task 'default', ['lint', 'browserify', 'paraout']
+gulp.task 'jsduck', ['paraout'], shell.task ['jsduck -o ./docs --config=jsduck.json']
+
+
+gulp.task 'default', ['lint', 'browserify', 'jsduck']

@@ -16,10 +16,11 @@
     "gulp": "^3.8.5",
     "gulp-coffee": "^2.0.1",
     "gulp-coffeelint": "*",
+    "gulp-shell": "^0.2.11",
     "gulp-util": "^2.2.19",
+    "rx": "^2.3.22",
     "vinyl-source-stream": "*",
-    "watchify": "^0.10.2",
-    "rx": "^2.3.22"
+    "watchify": "^0.10.2"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
