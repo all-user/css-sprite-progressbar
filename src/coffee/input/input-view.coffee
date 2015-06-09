@@ -15,7 +15,7 @@ dom = document.querySelector '#input-window'
 *             </p>
 *         </form>
 *         <button id="search-button">Search Flickr</button>
-*         <button id="cansel-button">Cansel</button>
+*         <button id="cancel-button">Cancel</button>
 *     </div>
 *
 * @class InputView
@@ -88,14 +88,14 @@ class InputView
   * @property {HTMLInputElement} elem.perPage
   * @property {HTMLInputElement} elem.maxReq
   * @property {HTMLButtonElement} elem.searchButton
-  * @property {HTMLButtonElement} elem.canselButton
+  * @property {HTMLButtonElement} elem.cancelButton
   ###
   elem:
     searchText   : dom.querySelector '#search-text'
     perPage      : dom.querySelector '#per-page'
     maxReq       : dom.querySelector '#max-req'
     searchButton : dom.querySelector '#search-button'
-    canselButton : dom.querySelector '#cansel-button'
+    cancelButton : dom.querySelector '#cancel-button'
 
 
 module.exports = new InputView

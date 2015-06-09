@@ -11,7 +11,7 @@ class TimeInfo
     @goalFPS = goalFPS
     @oldTime = 0
     @paused = yes
-    @interCount = 0
+    @innerCount = 0
     @totalFPS = 0
     @totalCoefficient = 0
 
@@ -31,7 +31,7 @@ class TimeInfo
     elapsed = newTime - @oldTime
     @oldTime = newTime
     FPS = 1000 / elapsed
-    @interCount++
+    @innerCount++
     @totalFPS += FPS
     coefficient = @goalFPS / FPS
     @totalCoefficient += coefficient
@@ -39,8 +39,8 @@ class TimeInfo
       elapsed: elapsed
       coefficient: coefficient
       FPS: FPS
-      averageFPS: @totalFPS / @interCount
-      averageCoefficient: @totalCoefficient / @interCount
+      averageFPS: @totalFPS / @innerCount
+      averageCoefficient: @totalCoefficient / @innerCount
     }
 
   ###* @method pause ###

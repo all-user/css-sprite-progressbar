@@ -145,7 +145,7 @@ document.addEventListener 'DOMContentLoaded', ->
 
   # inputView is observed by mediator
   inputView.clickStream
-  .filter (e) -> e.target == inputView.elem.canselButton
+  .filter (e) -> e.target == inputView.elem.cancelButton
   .subscribe(
     (e) ->
       photosModel.clearUnloaded()
@@ -154,8 +154,8 @@ document.addEventListener 'DOMContentLoaded', ->
         progressbarModel.fadeOut()
       if progressbarModel.stateful.get "failed"
         progressbarModel.fadeOut()
-    (e) -> console.log 'canselclick subscribe error', e
-    -> console.log 'canselclick subscribe on complete')
+    (e) -> console.log 'cancelclick subscribe error', e
+    -> console.log 'cancelclick subscribe on complete')
 
 
   inputView.clickStream
