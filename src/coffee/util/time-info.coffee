@@ -19,7 +19,7 @@ class TimeInfo
   getInfo: () ->
     if @paused is yes
       @paused = off
-      @oldTime = Date.now()
+      @oldTime = performance.now()
       return {
         elapsed: 0
         coefficient: 0
@@ -27,7 +27,7 @@ class TimeInfo
         averageFPS: 0
         averageCoefficient: 0
       }
-    newTime = paformanse.now()
+    newTime = performance.now()
     elapsed = newTime - @oldTime
     @oldTime = newTime
     FPS = 1000 / elapsed
