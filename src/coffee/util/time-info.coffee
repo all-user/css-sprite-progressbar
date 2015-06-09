@@ -16,7 +16,7 @@ class TimeInfo
     @totalCoefficient = 0
 
   ###* @method getInfo ###
-  getInfo: () ->
+  getInfo: (ts) ->
     if @paused is yes
       @paused = off
       @oldTime = performance.now()
@@ -27,7 +27,7 @@ class TimeInfo
         averageFPS: 0
         averageCoefficient: 0
       }
-    newTime = performance.now()
+    newTime = ts || performance.now()
     elapsed = newTime - @oldTime
     @oldTime = newTime
     FPS = 1000 / elapsed

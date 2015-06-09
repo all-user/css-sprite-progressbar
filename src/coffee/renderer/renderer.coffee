@@ -1,6 +1,26 @@
 makeStateful = (require '../util/stateful').makeStateful
 TimeInfo = require '../util/time-info'
 
+((w, r) ->
+  w['r'      +r] =
+  w['r'      +r] ||
+  w['webkitR'+r] ||
+  w['mozR'   +r] ||
+  w['msR'    +r] ||
+  w['oR'     +r] ||
+  (f) -> w.setTimeout(f, 1000 / 60)
+)(window, 'equestAnimationFrame')
+
+((w, c) ->
+  w['c'      +c] =
+  w['c'      +c] ||
+  w['webkitC'+c] ||
+  w['mozC'   +c] ||
+  w['msC'    +c] ||
+  w['oC'     +c] ||
+  clearInterval
+)(window, 'ancelAnimationFrame')
+
 ###*
 * @class Renderer
 * @uses Stateful
@@ -13,7 +33,7 @@ class Renderer
     @updaters = []
     @targetFPS = targetFPS ? 60
     @framerate = 1000 / @targetFPS | 0
-    @timerID = null
+    @requestID = null
     initialState =
       running: no
       deleted: no
@@ -56,10 +76,10 @@ class Renderer
     return if @stateful.get 'running'
     @coeffTimer ?= new TimeInfo @targetFPS
     @stateful.set 'running': yes
-    @timerID = setInterval =>
-      info = @coeffTimer.getInfo()
-      for v, i in @updaters
-        v(info.coefficient)
+    _draw = (timestamp) =>
+      info = @coeffTimer.getInfo timestamp
+      for fn, i in @updaters
+        fn info.coefficient
       if @stateful.get 'deleted'
         i = 0
         until i is @updaters.length
@@ -68,13 +88,14 @@ class Renderer
           else
             @updaters.splice i, 1
         @stateful.set 'deleted': no
-    , @framerate
+      @requestID = requestAnimationFrame _draw
+    @requestID = requestAnimationFrame _draw
 
   ###*
   * @method pause
   ###
   pause : ->
-    clearInterval(@timerID)
+    cancelAnimationFrame @requestID
     @coeffTimer.pause()
     @stateful.set 'running': no
 
