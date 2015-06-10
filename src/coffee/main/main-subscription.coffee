@@ -132,14 +132,14 @@ document.addEventListener 'DOMContentLoaded', ->
   progressbarModel.eventStream
   .filter (e) -> e.type is 'run'
   .subscribe(
-    (e) -> renderer.draw e.data
+    (e) -> renderer.draw()
     (e) -> console.log 'progressbarModel on run Error: ', e
     -> console.log 'progressbarModel on run complete')
 
   progressbarModel.eventStream
   .filter (e) -> e.type is 'stop'
   .subscribe(
-    (e) -> renderer.pause e.data
+    (e) -> renderer.pause()
     (e) -> console.log 'progressbarModel on stop Error: ', e
     -> console.log 'progressbarModel on stop complete')
 
