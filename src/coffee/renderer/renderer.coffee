@@ -1,25 +1,14 @@
 makeStateful = (require '../util/stateful').makeStateful
 TimeInfo = require '../util/time-info'
+Clock = require 'uupaa.clock.js'
 
-((w, r) ->
-  w['r'      +r] =
-  w['r'      +r] ||
-  w['webkitR'+r] ||
-  w['mozR'   +r] ||
-  w['msR'    +r] ||
-  w['oR'     +r] ||
-  (f) -> w.setTimeout(f, 1000 / 60)
-)(window, 'equestAnimationFrame')
+_clock_option =
+  vsync: on
 
-((w, c) ->
-  w['c'      +c] =
-  w['c'      +c] ||
-  w['webkitC'+c] ||
-  w['mozC'   +c] ||
-  w['msC'    +c] ||
-  w['oC'     +c] ||
-  clearInterval
-)(window, 'ancelAnimationFrame')
+# config of testing
+#   vsync: off
+#   wait : 30
+#   pulse: 4
 
 ###*
 * @class Renderer
@@ -29,11 +18,12 @@ TimeInfo = require '../util/time-info'
 * @param {Number} [targetFPS=60]
 ###
 class Renderer
+
   constructor: (targetFPS) ->
-    @updaters = []
+    @clock     = new Clock [], _clock_option
+    @updaters  = []
     @targetFPS = targetFPS ? 60
     @framerate = 1000 / @targetFPS | 0
-    @requestID = null
     initialState =
       running: no
       deleted: no
@@ -64,10 +54,22 @@ class Renderer
   ###
   _visitUpdaters : (action, fn) ->
     if action is 'delete'
-      for v, i in @updaters
-        if v is fn
-          @updaters[i] = null
-          @stateful.set 'deleted': yes
+      pos = @updaters.indexOf fn
+      if pos isnt -1 and @updaters[pos] is fn
+        @updaters[pos] = null
+        @stateful.set 'deleted': yes
+
+
+  _enterFrame: (timestamp) =>
+    info = @coeffTimer.getInfo timestamp
+    for fn, _ in @updaters
+      fn info.coefficient
+    if @stateful.get 'deleted'
+      i = 0; denseArray = []
+      for fn, _ in @updaters
+        denseArray.push fn if fn
+      @updaters = denseArray
+      @stateful.set 'deleted': no
 
   ###*
   * @method draw
@@ -76,26 +78,15 @@ class Renderer
     return if @stateful.get 'running'
     @coeffTimer ?= new TimeInfo @targetFPS
     @stateful.set 'running': yes
-    _draw = (timestamp) =>
-      info = @coeffTimer.getInfo timestamp
-      for fn, i in @updaters
-        fn info.coefficient
-      if @stateful.get 'deleted'
-        i = 0
-        until i is @updaters.length
-          if @updaters[i]?
-            i++
-          else
-            @updaters.splice i, 1
-        @stateful.set 'deleted': no
-      @requestID = requestAnimationFrame _draw
-    @requestID = requestAnimationFrame _draw
+    @clock.on @_enterFrame
+    @clock.start()
 
   ###*
   * @method pause
   ###
   pause : ->
-    cancelAnimationFrame @requestID
+    @clock.stop()
+    @clock.off @_enterFrame
     @coeffTimer.pause()
     @stateful.set 'running': no
 
