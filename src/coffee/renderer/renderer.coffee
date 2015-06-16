@@ -1,6 +1,7 @@
+xtend        = require 'xtend'
 makeStateful = (require '../util/stateful').makeStateful
-TimeInfo = require '../util/time-info'
-Clock = require '../../../../Clock.js/lib/Clock'
+TimeInfo     = require '../util/time-info'
+Clock        = require '../../../../Clock.js/lib/Clock'
 
 _clock_option =
   vsync: on
@@ -20,10 +21,13 @@ _clock_option =
 class Renderer
 
   constructor: (targetFPS) ->
-    @clock     = new Clock [], _clock_option
-    @updaters  = []
     @targetFPS = targetFPS ? 60
-    @framerate = 1000 / @targetFPS | 0
+    @timeInfo  = new TimeInfo @targetFPS
+    transform = (ts, _) =>
+      info = @timeInfo.getInfo ts
+      info.coefficient
+    opt = xtend(_clock_option, 'transform': transform)
+    @clock     = new Clock [], opt
     initialState =
       running: no
       deleted: no
@@ -31,63 +35,39 @@ class Renderer
 
   ###*
   * @method addUpdater
-  * @param {Function} updater
+  * @param { Function || [Function] } updater
   ###
   addUpdater: (updater) ->
     if updater instanceof Array
-      @updaters.concat(updater)
+      @clock.on fn for fn in updater
     else if typeof updater is 'function'
-      @updaters.push(updater)
+      @clock.on updater
 
   ###*
   * @method deleteUpdater
   * @param {Function} updater
   ###
   deleteUpdater: (updater) ->
-    @_visitUpdaters('delete', updater)
+    @clock.off updater
 
-  ###*
-  * @method _visitUpdaters
-  * @param {String} action
-  * @param {Function} fn
-  * @private
-  ###
-  _visitUpdaters : (action, fn) ->
-    if action is 'delete'
-      pos = @updaters.indexOf fn
-      if pos isnt -1 and @updaters[pos] is fn
-        @updaters[pos] = null
-        @stateful.set 'deleted': yes
-
-
-  _enterFrame: (timestamp) =>
-    info = @coeffTimer.getInfo timestamp
-    for fn, _ in @updaters
-      fn info.coefficient
-    if @stateful.get 'deleted'
-      i = 0; denseArray = []
-      for fn, _ in @updaters
-        denseArray.push fn if fn
-      @updaters = denseArray
-      @stateful.set 'deleted': no
 
   ###*
   * @method draw
   ###
   draw : ->
-    return if @stateful.get 'running'
-    @coeffTimer ?= new TimeInfo @targetFPS
-    @stateful.set 'running': yes
-    @clock.on @_enterFrame
+    if @clock.active
+      unless @stateful.get 'running'
+        @stateful.set 'running': yes
+      return
     @clock.start()
+    @stateful.set 'running': yes
 
   ###*
   * @method pause
   ###
   pause : ->
     @clock.stop()
-    @clock.off @_enterFrame
-    @coeffTimer.pause()
+    @timeInfo.pause()
     @stateful.set 'running': no
 
 
