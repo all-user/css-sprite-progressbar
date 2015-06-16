@@ -1,6 +1,6 @@
 makeStateful = (require '../util/stateful').makeStateful
 TimeInfo = require '../util/time-info'
-Clock = require 'uupaa.clock.js'
+Clock = require '../../../../Clock.js/lib/Clock'
 
 _clock_option =
   vsync: on
@@ -91,4 +91,4 @@ class Renderer
     @stateful.set 'running': no
 
 
-module.exports = new Renderer
+module.exports = Renderer

@@ -8,7 +8,7 @@ photosModel = require '../photos/photos-model'
 document.addEventListener 'DOMContentLoaded', ->
   inputView = require '../input/input-view'
   require '../photos/photos-subscription'
-  renderer = require '../renderer/renderer'
+  renderer = require '../renderer/import-renderer'
   { progressbarModel, progressbarView } =
     require '../progressbar/progressbar-subscription'
 

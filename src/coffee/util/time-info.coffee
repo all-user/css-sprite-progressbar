@@ -19,7 +19,7 @@ class TimeInfo
   getInfo: (ts) ->
     if @paused is yes
       @paused = off
-      @oldTime = performance.now()
+      @oldTime = ts || performance.now()
       return {
         elapsed: 0
         coefficient: 0
@@ -36,10 +36,12 @@ class TimeInfo
     coefficient = @goalFPS / FPS
     @totalCoefficient += coefficient
     return {
-      elapsed: elapsed
-      coefficient: coefficient
-      FPS: FPS
-      averageFPS: @totalFPS / @innerCount
+      goalFPS:            @goalFPS
+      elapsed:            elapsed
+      coefficient:        coefficient
+      totalCoefficient:   @totalCoefficient
+      FPS:                FPS
+      averageFPS:         @totalFPS         / @innerCount
       averageCoefficient: @totalCoefficient / @innerCount
     }
 

@@ -1,7 +1,7 @@
 Rx           = require 'rx'
 makeStateful = (require '../util/stateful').makeStateful
 SpriteTile   = require '../util/sprite-tile'
-renderer     = require '../renderer/renderer'
+renderer     = require '../renderer/import-renderer'
 
 ###*
 * HTMLの以下の部分と密結合しており、`ProgressbarModel`などのデータを元にプログレスバーを描画する
