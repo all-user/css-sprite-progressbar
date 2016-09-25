@@ -7,10 +7,10 @@ photosModel = require '../photos/photos-model'
 
 document.addEventListener 'DOMContentLoaded', ->
   inputView = require '../input/input-view'
-  require '../photos/photos-operation'
+  require '../photos/photos-subscription'
   renderer = require '../renderer/renderer'
   { progressbarModel, progressbarView } =
-    require '../progressbar/progressbar-operation'
+    require '../progressbar/progressbar-subscription'
 
   renderer.addUpdater progressbarView.makeProgressbarUpdate()
 

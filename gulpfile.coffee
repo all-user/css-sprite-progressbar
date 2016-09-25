@@ -10,7 +10,7 @@ shell = require 'gulp-shell'
 
 gulp.task 'browserify', ->
   browserify
-    entries : ['./src/coffee/main/main-operation.coffee']
+    entries : ['./src/coffee/main/main-subscription.coffee']
     extensions : ['.coffee']
   .bundle()
   .pipe source 'app.js'
@@ -19,7 +19,7 @@ gulp.task 'browserify', ->
 gulp.task 'watch', ->
   bundler =
     watchify
-      entries : ['./src/coffee/main/main-operation.coffee']
+      entries : ['./src/coffee/main/main-subscription.coffee']
       extensions : ['.coffee']
       verbose : on
   rebundle = ->
